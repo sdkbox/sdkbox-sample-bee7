@@ -1,5 +1,6 @@
 
 #include "HelloWorldScene.h"
+#include "PluginBee7/PluginBee7.h"
 
 USING_NS_CC;
 
@@ -58,19 +59,45 @@ void HelloWorld::createTestMenu()
 {
     auto menu = Menu::create();
 
-    menu->addChild(MenuItemLabel::create(Label::createWithSystemFont("Test Item 1", "sans", 24), [](Ref*){
-        CCLOG("Test Item 1");
-    }));
+    sdkbox::PluginBee7::setListener(this);
 
-    menu->addChild(MenuItemLabel::create(Label::createWithSystemFont("Test Item 2", "sans", 24), [](Ref*){
-        CCLOG("Test Item 2");
-    }));
-
-    menu->addChild(MenuItemLabel::create(Label::createWithSystemFont("Test Item 3", "sans", 24), [](Ref*){
-        CCLOG("Test Item 3");
+    menu->addChild(MenuItemLabel::create(Label::createWithSystemFont("show game wall", "sans", 24), [](Ref*){
+        CCLOG("show game wall");
+        sdkbox::PluginBee7::showGameWall();
     }));
 
     menu->alignItemsVerticallyWithPadding(10);
     addChild(menu);
+}
+
+void HelloWorld::onAvailableChange(bool available)
+{
+    CCLOG("onAvailableChange: %s", available ? "YES" : "NO");
+}
+
+void HelloWorld::onVisibleChange(bool available)
+{
+    CCLOG("onVisibleChange: %s", available ? "YES" : "NO");
+}
+
+void HelloWorld::onGameWallWillClose()
+{
+    CCLOG("onGameWallWillClose");
+}
+
+void HelloWorld::onGiveReward(long bee7Points,
+                              long virtualCurrencyAmount,
+                              const std::string& appId,
+                              bool cappedReward,
+                              long campaignId,
+                              bool videoReward)
+{
+    CCLOG("onGiveReward");
+    CCLOG(" - bee7Points: %ld", bee7Points);
+    CCLOG(" - virtualCurrencyAmount: %ld", virtualCurrencyAmount);
+    CCLOG(" - appId: %s", appId.c_str());
+    CCLOG(" - cappedReward: %s", cappedReward ? "YES" : "NO");
+    CCLOG(" - campaignId: %ld", campaignId);
+    CCLOG(" - videoReward: %s", videoReward ? "YES" : "NO");
 }
 

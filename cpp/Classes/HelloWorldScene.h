@@ -2,8 +2,9 @@
 #define __HELLOWORLD_SCENE_H__
 
 #include "cocos2d.h"
+#include "PluginBee7/PluginBee7.h"
 
-class HelloWorld : public cocos2d::Layer
+class HelloWorld : public cocos2d::Layer, public sdkbox::Bee7Listener
 {
 public:
     // there's no 'id' in cpp, so we recommend returning the class instance pointer
@@ -18,6 +19,15 @@ public:
 private:
     void createTestMenu();
 
+    virtual void onAvailableChange(bool available);
+    virtual void onVisibleChange(bool available);
+    virtual void onGameWallWillClose();
+    virtual void onGiveReward(long bee7Points,
+                      long virtualCurrencyAmount,
+                      const std::string& appId,
+                      bool cappedReward,
+                      long campaignId,
+                      bool videoReward);
 };
 
 #endif // __HELLOWORLD_SCENE_H__

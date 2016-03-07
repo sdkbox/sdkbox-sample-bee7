@@ -31,16 +31,32 @@ var HelloWorldLayer = cc.Layer.extend({
     },
 
     createTestMenu:function() {
-        var item1 = new cc.MenuItemLabel(new cc.LabelTTF("Test Item 1", "sans", 28), function() {
-            cc.log("Test Item 1");
+        sdkbox.PluginBee7.init();
+        sdkbox.PluginBee7.setListener({
+            onAvailableChange: function(available) {
+                cc.log("onAvailableChange: " + available.toString());
+            },
+            onVisibleChange: function(available) {
+                cc.log("onVisibleChange: " + available.toString());
+            },
+            onGameWallWillClose: function() {
+                cc.log("onGameWallWillClose");
+            },
+            onGiveReward: function(bee7Points, virtualCurrencyAmount, appId, cappedReward,
+                                   campaignId, videoReward) {
+                cc.log("onGiveReward");
+                cc.log("bee7Points: " + bee7Points.toString());
+                cc.log("virtualCurrencyAmount: " + virtualCurrencyAmount.toString());
+                cc.log("appId: " + appId.toString());
+                cc.log("cappedReward: " + cappedReward.toString());
+                cc.log("campaignId: " + campaignId.toString());
+                cc.log("videoReward: " + videoReward.toString());
+            }
         });
 
-        var item2 = new cc.MenuItemLabel(new cc.LabelTTF("Test Item 2", "sans", 28), function() {
-            cc.log("Test Item 2");
-        });
-
-        var item3 = new cc.MenuItemLabel(new cc.LabelTTF("Test Item 3", "sans", 28), function() {
-            cc.log("Test Item 3");
+        var item1 = new cc.MenuItemLabel(new cc.LabelTTF("show game wall", "sans", 28), function() {
+            cc.log("show game wall");
+            sdkbox.PluginBee7.showGameWall();
         });
 
         var winsize = cc.winSize;

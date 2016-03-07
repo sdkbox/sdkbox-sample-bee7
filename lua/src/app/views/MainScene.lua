@@ -18,25 +18,19 @@ function MainScene:onCreate()
 end
 
 function MainScene:setupTestMenu()
-    local label1 = cc.Label:createWithSystemFont("Test Item 1", "sans", 28)
+    sdkbox.PluginBee7:init()
+    sdkbox.PluginBee7:setListener(function(...)
+        dump({...})
+    end)
+
+    local label1 = cc.Label:createWithSystemFont("show game wall", "sans", 28)
     local item1 = cc.MenuItemLabel:create(label1)
     item1:onClicked(function()
-        print("Test Item 1")
+        print("show game wall")
+        sdkbox.PluginBee7:showGameWall()
     end)
 
-    local label2 = cc.Label:createWithSystemFont("Test Item 2", "sans", 28)
-    local item2 = cc.MenuItemLabel:create(label2)
-    item2:onClicked(function()
-        print("Test Item 2")
-    end)
-
-    local label3 = cc.Label:createWithSystemFont("Test Item 3", "sans", 28)
-    local item3 = cc.MenuItemLabel:create(label3)
-    item3:onClicked(function()
-        print("Test Item 3")
-    end)
-
-    local menu = cc.Menu:create(item1, item2, item3)
+    local menu = cc.Menu:create(item1)
     menu:alignItemsVerticallyWithPadding(24)
     self:addChild(menu)
 end
