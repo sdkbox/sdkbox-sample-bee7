@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="white">#ffffff</color>
+    <color name="black">#000000</color>
+
+    <color name="bee7_header_text_color">#373f54</color>
+    <color name="bee7_text_color">#373f54</color>
+    <color name="bee7_btn_text_color">#ffffff</color>
+
+    <color name="bee7_dialog_background_color">#B3474945</color>
+
+    <color name="bee7_background_color">#e9edf2</color>
+    <color name="bee7_footer_text_color">#9ca3ab</color>
+
+    <color name="bee7_header_color_1">#ccd5cf</color>
+    <color name="bee7_header_color_2">#d2ded1</color>
+    <color name="bee7_header_start_color">#e3eee1</color>
+    <color name="bee7_header_end_color">#e3eee1</color>
+    <color name="bee7_header_text_shadow">#00000000</color>
+
+    <color name="bee7_banner_bg_selected_color_1">#ffc3dadd</color>
+    <color name="bee7_banner_bg_selected_start_color">#fffefefe</color>
+    <color name="bee7_banner_bg_selected_center_color">#fffefefe</color>
+    <color name="bee7_banner_bg_selected_end_color">#fffefefe</color>
+    <color name="bee7_banner_bg_pressed_color">#fff3fffa</color>
+</resources>

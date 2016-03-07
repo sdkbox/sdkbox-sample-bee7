@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="bee7_ok">OK</string>
+    <string name="bee7_no_internet_connection">インターネットに\n接続していません</string>
+    <string name="bee7_header_title">ゲームをプレイして入手</string>
+
+    <string name="video_dialog_message">報酬を入手するには、\n最後までビデオを見てね！</string>
+    <string name="video_dialog_keep_watching">見続ける</string>
+
+    <!--tutorial dialog-->
+    <string name="bee7_dialog_tutorial_playgames">ゲームをプレイ</string>
+    <string name="bee7_dialog_tutorial_part1"></string>
+    <string name="bee7_dialog_tutorial_part2">で</string>
+    <string name="bee7_dialog_tutorial_part3">を稼ごう</string>
+
+    <!--redirecting dialog-->
+    <string name="bee7_dialog_redirecting_part1"></string>
+    <string name="bee7_dialog_redirecting_part2">をプレイし</string>
+    <string name="bee7_dialog_redirecting_part3"></string>
+    <string name="bee7_dialog_redirecting_part4">で</string>
+    <string name="bee7_dialog_redirecting_part5">を稼ごう</string>
+    <string name="bee7_dialog_redirecting">リダイレクト中</string>
+
+    <!--reward dialog-->
+    <string name="bee7_dialog_reward_part1">稼いだコイン数</string>
+    <string name="bee7_dialog_reward_part2"></string>
+    <string name="bee7_dialog_reward_part3">をまたプレイし</string>
+    <string name="bee7_dialog_reward_part4"></string>
+    <string name="bee7_dialog_reward_part5">で</string>
+    <string name="bee7_dialog_reward_part6">を稼ごう</string>
+</resources>

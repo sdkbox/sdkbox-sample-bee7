@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="bee7_ok">OK</string>
+    <string name="bee7_no_internet_connection">Нет связи\nс интернетом</string>
+    <string name="bee7_header_title">Играй в игры и получай</string>
+
+    <string name="video_dialog_message">Посмотри видео, чтобы получить награду!</string>
+    <string name="video_dialog_keep_watching">Продолжить смотреть</string>
+
+    <!--tutorial dialog-->
+    <string name="bee7_dialog_tutorial_playgames">Играй в игры</string>
+    <string name="bee7_dialog_tutorial_part1">зарабатывай</string>
+    <string name="bee7_dialog_tutorial_part2">в</string>
+    <string name="bee7_dialog_tutorial_part3"></string>
+
+    <!--redirecting dialog-->
+    <string name="bee7_dialog_redirecting_part1">Играй в</string>
+    <string name="bee7_dialog_redirecting_part2"></string>
+    <string name="bee7_dialog_redirecting_part3">зарабатывай</string>
+    <string name="bee7_dialog_redirecting_part4">в</string>
+    <string name="bee7_dialog_redirecting_part5"></string>
+    <string name="bee7_dialog_redirecting">Идет перенаправление</string>
+
+    <!--reward dialog-->
+    <string name="bee7_dialog_reward_part1">Ты получаешь</string>
+    <string name="bee7_dialog_reward_part2">Сыграй в</string>
+    <string name="bee7_dialog_reward_part3">снова</string>
+    <string name="bee7_dialog_reward_part4">заработай</string>
+    <string name="bee7_dialog_reward_part5">в</string>
+    <string name="bee7_dialog_reward_part6"></string>
+</resources>

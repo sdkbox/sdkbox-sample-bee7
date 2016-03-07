@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="bee7_ok">알겠어요</string>
+    <string name="bee7_no_internet_connection">인터넷에\n연결할 수 없음</string>
+    <string name="bee7_header_title">게임 플레이 &amp; 코인 적립</string>
+
+    <string name="video_dialog_message">풀 비디오를 시청하고 보상금을 획득하세요!</string>
+    <string name="video_dialog_keep_watching">계속 시청</string>
+
+    <!--tutorial dialog-->
+    <string name="bee7_dialog_tutorial_playgames">게임 플레이</string>
+    <string name="bee7_dialog_tutorial_part1"></string>
+    <string name="bee7_dialog_tutorial_part2">에서</string>
+    <string name="bee7_dialog_tutorial_part3">적립</string>
+
+    <!--redirecting dialog-->
+    <string name="bee7_dialog_redirecting_part1"></string>
+    <string name="bee7_dialog_redirecting_part2">플레이</string>
+    <string name="bee7_dialog_redirecting_part3"></string>
+    <string name="bee7_dialog_redirecting_part4">에서</string>
+    <string name="bee7_dialog_redirecting_part5">적립</string>
+    <string name="bee7_dialog_redirecting">리다이렉트 중</string>
+
+    <!--reward dialog-->
+    <string name="bee7_dialog_reward_part1">적립되었어요</string>
+    <string name="bee7_dialog_reward_part2">다시</string>
+    <string name="bee7_dialog_reward_part3">플레이</string>
+    <string name="bee7_dialog_reward_part4"></string>
+    <string name="bee7_dialog_reward_part5">에서</string>
+    <string name="bee7_dialog_reward_part6">적립</string>
+</resources>

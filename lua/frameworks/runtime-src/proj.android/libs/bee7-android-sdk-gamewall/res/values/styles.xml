@@ -1,0 +1,134 @@
+<resources>
+    <!--
+          Base application theme, dependent on API level. This theme is replaced
+          by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
+    -->
+    <style name="AppBaseTheme" parent="android:Theme.Light">
+        <!--
+                Theme customizations available in newer API levels can go in
+                res/values-vXX/styles.xml, while customizations related to
+                backward-compatibility can go here.
+        -->
+    </style>
+
+    <!-- Application theme. -->
+    <style name="AppTheme" parent="AppBaseTheme">
+    </style>
+
+    <!-- Game Wall -->
+    <style name="bee7_gamewallStyle">
+        <item name="android:background">@color/bee7_background_color</item>
+    </style>
+
+    <!-- Game Wall ScrollView -->
+    <style name="bee7_gamewallScrollView">
+        <item name="android:fillViewport">true</item>
+    </style>
+
+    <style name="bee7_gamewallHeaderCloseIcon">
+        <item name="android:src">@drawable/bee7_btn_close</item>
+        <item name="android:background">@android:color/transparent</item>
+    </style>
+
+    <!--
+        Game wall offer item
+    -->
+    <style name="bee7_gamewallGamesListItemTitle">
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/bee7_text_color</item>
+        <item name="android:maxLines">2</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+
+    <style name="bee7_gamewallGamesListItemDescription">
+        <item name="android:textSize">@dimen/bee7_style_small_text</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/bee7_text_color</item>
+        <item name="android:maxLines">2</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:shadowColor">#fffefd</item>
+        <item name="android:shadowDy">2</item>
+        <item name="android:shadowRadius">1</item>
+    </style>
+
+    <!-- video part -->
+    <style name="bee7_gamewall_offer_video">
+        <item name="android:layout_marginBottom">@dimen/bee7_ingamewall_video_margin_vertical</item>
+        <item name="android:layout_marginTop">@dimen/bee7_ingamewall_video_margin_top</item>
+        <item name="android:layout_marginLeft">@dimen/bee7_ingamewall_video_margin_vertical</item>
+        <item name="android:layout_marginRight">@dimen/bee7_ingamewall_video_margin_vertical</item>
+    </style>
+
+    <style name="bee7_gamewall_video_control_close">
+        <item name="android:src">@drawable/bee7_btn_close_round</item>
+    </style>
+
+    <style name="bee7_gamewall_video_dialog_control_close">
+        <item name="android:src">@drawable/bee7_btn_close</item>
+    </style>
+
+    <style name="bee7_gamewall_video_control_mute">
+        <item name="android:src">@drawable/bee7_btn_sound_on</item>
+    </style>
+
+    <style name="bee7_gamewall_video_control_replay">
+        <item name="android:src">@drawable/bee7_btn_reload</item>
+    </style>
+    <!-- Game wall offer item end -->
+
+    <style name="bee7_fullscreenVideo_end">
+        <item name="android:background">#ffe7ff</item>
+    </style>
+
+    <!-- cancel dialog -->
+    <style name="bee7_footer_title">
+        <item name="android:textColor">#ffffff</item>
+        <item name="android:layout_marginLeft">15dp</item>
+        <item name="android:layout_marginRight">5dp</item>
+        <item name="android:textSize">@dimen/bee7_stop_video_dialog_header_text_size</item>
+        <item name="android:text">@string/bee7_footer_powered_by</item>
+    </style>
+
+    <!-- Local copy of android:Theme.Holo.Dialog.Alert -->
+    <style name="CustomBee7DialogTheme" parent="@android:style/Theme.Dialog">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+    </style>
+
+    <!-- Header -->
+    <style name="bee7_gamewall_header_title">
+        <item name="android:textColor">@color/bee7_header_text_color</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:shadowColor">@color/bee7_header_text_shadow</item>
+        <item name="android:shadowRadius">5</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:textSize">@dimen/bee7_gamewall_header_text_size</item>
+    </style>
+
+    <!-- Activity -->
+    <style name="bee7_ActivityTheme.Transparent" parent="android:Theme">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:windowFullscreen">true</item>
+    </style>
+
+    <!-- other -->
+    <style name="bee7_button_text">
+        <item name="android:textColor">@color/bee7_btn_text_color</item>
+        <item name="android:shadowColor">@color/white</item>
+        <item name="android:shadowDy">2</item>
+        <item name="android:shadowDx">0</item>
+        <item name="android:shadowRadius">1</item>
+        <item name="android:paddingTop">5dp</item>
+        <item name="android:paddingBottom">8dp</item>
+        <item name="android:paddingLeft">@dimen/bee7_dialog_button_padding_horizontal</item>
+        <item name="android:paddingRight">@dimen/bee7_dialog_button_padding_horizontal</item>
+    </style>
+
+</resources>

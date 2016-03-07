@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="bee7_ok">OK</string>
+    <string name="bee7_no_internet_connection">No hay conexión a internet</string>
+    <string name="bee7_header_title">Juega a los juegos y gana</string>
+
+    <string name="video_dialog_message">¡Mira los vídeos al completo para obtener tu recompensa!</string>
+    <string name="video_dialog_keep_watching">Seguir viendo</string>
+
+    <!--tutorial dialog-->
+    <string name="bee7_dialog_tutorial_playgames">Juega a los juegos</string>
+    <string name="bee7_dialog_tutorial_part1">gana</string>
+    <string name="bee7_dialog_tutorial_part2">en</string>
+    <string name="bee7_dialog_tutorial_part3"></string>
+
+    <!--redirecting dialog-->
+    <string name="bee7_dialog_redirecting_part1">Juega a</string>
+    <string name="bee7_dialog_redirecting_part2"></string>
+    <string name="bee7_dialog_redirecting_part3">gana</string>
+    <string name="bee7_dialog_redirecting_part4">en</string>
+    <string name="bee7_dialog_redirecting_part5"></string>
+    <string name="bee7_dialog_redirecting">Redirigiendo</string>
+
+    <!--reward dialog-->
+    <string name="bee7_dialog_reward_part1">Has ganado</string>
+    <string name="bee7_dialog_reward_part2">Juega a</string>
+    <string name="bee7_dialog_reward_part3"></string>
+    <string name="bee7_dialog_reward_part4">gana</string>
+    <string name="bee7_dialog_reward_part5">en</string>
+    <string name="bee7_dialog_reward_part6"></string>
+</resources>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bee7_dialog_background_color">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minWidth="@dimen/bee7_dialog_min_width"
+        android:minHeight="@dimen/bee7_dialog_min_height"
+        android:layout_centerInParent="true"
+        android:layout_marginLeft="@dimen/bee7_dialog_margin_horizontal"
+        android:layout_marginRight="@dimen/bee7_dialog_margin_horizontal"
+        android:background="@drawable/bee7_video_dialog_bg"
+        android:paddingLeft="@dimen/bee7_dialog_padding"
+        android:paddingRight="@dimen/bee7_dialog_padding"
+        android:paddingTop="@dimen/bee7_dialog_padding_top"
+        android:paddingBottom="@dimen/bee7_dialog_padding"
+        android:orientation="vertical"
+        android:gravity="center">
+
+        <TextView
+            android:id="@+id/bee7_dialog_internet_message"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:text="@string/bee7_no_internet_connection"
+            android:textColor="@color/bee7_text_color"
+            android:textSize="@dimen/bee7_dialog_text_size"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:textAllCaps="true"
+            android:layout_weight="1"/>
+
+        <TextView
+            android:id="@+id/bee7_dialog_internet_ok"
+            style="@style/bee7_button_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bee7_btn_blank_selector"
+            android:text="@string/bee7_ok"
+            android:textSize="@dimen/bee7_dialog_text_size"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:textAllCaps="true"
+            android:includeFontPadding="false"
+            android:layout_marginTop="@dimen/bee7_dialog_item_margin"/>
+
+    </LinearLayout>
+
+</RelativeLayout>

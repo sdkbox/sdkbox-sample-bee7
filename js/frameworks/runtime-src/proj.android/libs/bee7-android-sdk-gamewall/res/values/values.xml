@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="bee7_gamewallIconSize">small</string>
+    <string name="bee7_gamewallSourceIconDPI">xhdpi</string>
+    <bool name="bee7_gamewallIsPhone">true</bool>
+</resources>

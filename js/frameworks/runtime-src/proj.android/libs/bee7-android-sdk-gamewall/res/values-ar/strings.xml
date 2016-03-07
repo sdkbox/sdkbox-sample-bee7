@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="bee7_ok">موافق</string>
+    <string name="bee7_no_internet_connection">لا يوجد\nاتصال بالإنترنت</string>
+    <string name="bee7_header_title">العب الألعاب لتربح</string>
+
+    <string name="video_dialog_message">شاهد الفيديو بأكمله لتحصل على مكافأتك!</string>
+    <string name="video_dialog_keep_watching">استمر في المشاهدة</string>
+
+    <!--tutorial dialog-->
+    <string name="bee7_dialog_tutorial_playgames">اكسب</string>
+    <string name="bee7_dialog_tutorial_part1">العب الألعاب</string>
+    <string name="bee7_dialog_tutorial_part2">في</string>
+    <string name="bee7_dialog_tutorial_part3"></string>
+
+    <!--redirecting dialog-->
+    <string name="bee7_dialog_redirecting_part1">العب</string>
+    <string name="bee7_dialog_redirecting_part2"></string>
+    <string name="bee7_dialog_redirecting_part3">اكسب</string>
+    <string name="bee7_dialog_redirecting_part4">في</string>
+    <string name="bee7_dialog_redirecting_part5"></string>
+    <string name="bee7_dialog_redirecting">يتم إعادة التوجيه</string>
+
+    <!--reward dialog-->
+    <string name="bee7_dialog_reward_part1">لقد ربحت</string>
+    <string name="bee7_dialog_reward_part2">العب</string>
+    <string name="bee7_dialog_reward_part3">اكسب</string>
+    <string name="bee7_dialog_reward_part4">مرة أخرى</string>
+    <string name="bee7_dialog_reward_part5">في</string>
+    <string name="bee7_dialog_reward_part6"></string>
+</resources>

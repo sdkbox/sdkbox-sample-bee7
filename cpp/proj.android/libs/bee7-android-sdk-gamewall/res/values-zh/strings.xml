@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="bee7_ok">确定</string>
+    <string name="bee7_no_internet_connection">无网络连接</string>
+    <string name="bee7_header_title">玩游戏并赚取</string>
+
+    <string name="video_dialog_message">观看完整视频\n获得你的奖励！</string>
+    <string name="video_dialog_keep_watching">继续观看</string>
+
+    <!--tutorial dialog-->
+    <string name="bee7_dialog_tutorial_playgames">玩游戏</string>
+    <string name="bee7_dialog_tutorial_part1">赚取</string>
+    <string name="bee7_dialog_tutorial_part2">中的</string>
+    <string name="bee7_dialog_tutorial_part3"></string>
+
+    <!--redirecting dialog-->
+    <string name="bee7_dialog_redirecting_part1">玩</string>
+    <string name="bee7_dialog_redirecting_part2"></string>
+    <string name="bee7_dialog_redirecting_part3">赚取</string>
+    <string name="bee7_dialog_redirecting_part4">中的</string>
+    <string name="bee7_dialog_redirecting_part5"></string>
+    <string name="bee7_dialog_redirecting">正在重定向</string>
+
+    <!--reward dialog-->
+    <string name="bee7_dialog_reward_part1">你赚了</string>
+    <string name="bee7_dialog_reward_part2">再玩</string>
+    <string name="bee7_dialog_reward_part3"></string>
+    <string name="bee7_dialog_reward_part4">赚取</string>
+    <string name="bee7_dialog_reward_part5">中的</string>
+    <string name="bee7_dialog_reward_part6"></string>
+</resources>

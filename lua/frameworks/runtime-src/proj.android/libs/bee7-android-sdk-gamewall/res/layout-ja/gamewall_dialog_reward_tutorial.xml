@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    android:id="@+id/popupBubbleLayout"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bee7_dialog_background_color">
+
+    <LinearLayout
+        android:id="@+id/dialog_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minWidth="@dimen/bee7_dialog_min_width"
+        android:minHeight="@dimen/bee7_dialog_min_height"
+        android:layout_centerInParent="true"
+        android:layout_marginLeft="@dimen/bee7_dialog_margin_horizontal"
+        android:layout_marginRight="@dimen/bee7_dialog_margin_horizontal"
+        android:background="@drawable/bee7_video_dialog_bg"
+        android:paddingLeft="@dimen/bee7_dialog_padding"
+        android:paddingRight="@dimen/bee7_dialog_padding"
+        android:paddingTop="@dimen/bee7_dialog_padding_top"
+        android:paddingBottom="@dimen/bee7_dialog_padding"
+        android:orientation="vertical"
+        android:gravity="center">
+
+        <TextView
+            android:id="@+id/bee7_dialog_reward_text_part1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/bee7_dialog_reward_part1"
+            android:textColor="@color/bee7_text_color"
+            android:textSize="@dimen/bee7_dialog_text_size"
+            android:textAllCaps="true"
+            android:textStyle="bold"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="15dp">
+
+            <TextView
+                android:id="@+id/bee7_dialog_reward_text_amount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/bee7_text_color"
+                android:textSize="@dimen/bee7_dialog_currency_text_size"
+                android:textStyle="bold"/>
+
+            <ImageView
+                android:id="@+id/bee7_dialog_reward_icon_amount_virtualcurrency"
+                android:layout_width="@dimen/bee7_dialog_reward_vc_icon_size"
+                android:layout_height="@dimen/bee7_dialog_reward_vc_icon_size"
+                android:layout_margin="@dimen/bee7_dialog_item_padding" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/bee7_dialog_reward_text_part2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/bee7_dialog_reward_part2"
+                android:textColor="@color/bee7_text_color"
+                android:textSize="@dimen/bee7_dialog_text_size"
+                android:textAllCaps="true"
+                android:textStyle="bold"/>
+
+            <ImageView
+                android:id="@+id/bee7_dialog_reward_icon_advertiser"
+                android:layout_width="@dimen/bee7_dialog_advertiser_icon_size"
+                android:layout_height="@dimen/bee7_dialog_advertiser_icon_size"
+                android:layout_margin="@dimen/bee7_dialog_item_padding"/>
+
+            <TextView
+                android:id="@+id/bee7_dialog_reward_text_part3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/bee7_dialog_reward_part3"
+                android:textAllCaps="true"
+                android:textColor="@color/bee7_text_color"
+                android:textSize="@dimen/bee7_dialog_text_size"
+                android:textStyle="bold"/>
+        </LinearLayout>
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/bee7_dialog_icon_arrow_size"
+            android:src="@drawable/bee7_arrow"
+            android:adjustViewBounds="true"
+            android:layout_margin="@dimen/bee7_dialog_item_padding"
+            android:layout_gravity="center_horizontal" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/bee7_dialog_reward_text_part4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/bee7_dialog_reward_part4"
+                android:textColor="@color/bee7_text_color"
+                android:textSize="@dimen/bee7_dialog_text_size"
+                android:textAllCaps="true"
+                android:textStyle="bold"/>
+
+            <ImageView
+                android:id="@+id/bee7_dialog_reward_icon_publisher"
+                android:layout_width="@dimen/bee7_dialog_publisher_icon_size"
+                android:layout_height="@dimen/bee7_dialog_publisher_icon_size"
+                android:layout_margin="@dimen/bee7_dialog_item_padding"/>
+
+            <TextView
+                android:id="@+id/bee7_dialog_reward_text_part5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/bee7_dialog_reward_part5"
+                android:textColor="@color/bee7_text_color"
+                android:textSize="@dimen/bee7_dialog_text_size"
+                android:textAllCaps="true"
+                android:textStyle="bold"/>
+
+            <ImageView
+                android:id="@+id/bee7_dialog_reward_icon_virtualcurrency"
+                android:layout_width="@dimen/bee7_dialog_reward_vc_icon_size"
+                android:layout_height="@dimen/bee7_dialog_reward_vc_icon_size"
+                android:layout_margin="@dimen/bee7_dialog_item_padding"/>
+
+            <TextView
+                android:id="@+id/bee7_dialog_reward_text_part6"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/bee7_dialog_reward_part6"
+                android:textColor="@color/bee7_text_color"
+                android:textSize="@dimen/bee7_dialog_text_size"
+                android:textAllCaps="true"
+                android:textStyle="bold"/>
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/bee7_dialog_reward_text_button"
+            style="@style/bee7_button_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bee7_btn_blank_selector"
+            android:text="@string/bee7_ok"
+            android:textSize="@dimen/bee7_dialog_text_size"
+            android:textStyle="bold"
+            android:textAllCaps="true"
+            android:gravity="center"
+            android:layout_marginTop="@dimen/bee7_dialog_item_margin"
+            android:includeFontPadding="false"/>
+
+    </LinearLayout>
+
+</RelativeLayout>

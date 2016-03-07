@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="bee7_ok">OK</string>
+    <string name="bee7_no_internet_connection">No internet connection</string>
+    <string name="bee7_header_title">Play games &amp; earn</string>
+
+    <string name="video_dialog_message">Watch full video to\nget your reward!</string>
+    <string name="video_dialog_keep_watching">KEEP WATCHING</string>
+
+    <string name="bee7_font_file"></string>
+    <string name="bee7_title_font_file"></string>
+
+    <string name="drm_error_not_supported">Protected content not supported on API levels below 18</string>
+    <string name="drm_error_unsupported_scheme">This device does not support the required DRM scheme</string>
+    <string name="drm_error_unknown">An unknown DRM error occurred</string>
+    <string name="failed">Playback failed</string>
+    <string name="bee7_footer_powered_by">Powered by</string>
+
+    <!--tutorial dialog-->
+    <string name="bee7_dialog_tutorial_playgames">Play games</string>
+    <string name="bee7_dialog_tutorial_part1">earn</string>
+    <string name="bee7_dialog_tutorial_part2">in</string>
+    <string name="bee7_dialog_tutorial_part3"></string>
+    
+    <!--redirecting dialog-->
+    <string name="bee7_dialog_redirecting_part1">Play</string>
+    <string name="bee7_dialog_redirecting_part2"></string>
+    <string name="bee7_dialog_redirecting_part3">earn</string>
+    <string name="bee7_dialog_redirecting_part4">in</string>
+    <string name="bee7_dialog_redirecting_part5"></string>
+    <string name="bee7_dialog_redirecting">Redirecting</string>
+
+    <!--reward dialog-->
+    <string name="bee7_dialog_reward_part1">You earned</string>
+    <string name="bee7_dialog_reward_part2">Play</string>
+    <string name="bee7_dialog_reward_part3">again</string>
+    <string name="bee7_dialog_reward_part4">earn</string>
+    <string name="bee7_dialog_reward_part5">in</string>
+    <string name="bee7_dialog_reward_part6"></string>
+    
+</resources>

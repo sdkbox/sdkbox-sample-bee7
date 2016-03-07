@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <bool name="bee7_gamewall_portrait">false</bool>
+    <item name="bee7_gamewall_unit_list_items" format="integer" type="integer">4</item>
+</resources>

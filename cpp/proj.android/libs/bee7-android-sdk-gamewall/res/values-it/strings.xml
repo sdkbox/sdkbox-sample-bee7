@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="bee7_ok">OK</string>
+    <string name="bee7_no_internet_connection">Connessione Internet assente</string>
+    <string name="bee7_header_title">Gioca e guadagna</string>
+
+    <string name="video_dialog_message">Guarda tutto il video per avere la ricompensa!</string>
+    <string name="video_dialog_keep_watching">Continua a guardare</string>
+
+    <!--tutorial dialog-->
+    <string name="bee7_dialog_tutorial_playgames">Gioca giochi</string>
+    <string name="bee7_dialog_tutorial_part1">guadagna</string>
+    <string name="bee7_dialog_tutorial_part2">in</string>
+    <string name="bee7_dialog_tutorial_part3"></string>
+
+    <!--redirecting dialog-->
+    <string name="bee7_dialog_redirecting_part1">Gioca</string>
+    <string name="bee7_dialog_redirecting_part2"></string>
+    <string name="bee7_dialog_redirecting_part3">guadagna</string>
+    <string name="bee7_dialog_redirecting_part4">in</string>
+    <string name="bee7_dialog_redirecting_part5"></string>
+    <string name="bee7_dialog_redirecting">Reindirizzamento</string>
+
+    <!--reward dialog-->
+    <string name="bee7_dialog_reward_part1">Hai guadagnato</string>
+    <string name="bee7_dialog_reward_part2">Gioca ancora con</string>
+    <string name="bee7_dialog_reward_part3"></string>
+    <string name="bee7_dialog_reward_part4">guadagna</string>
+    <string name="bee7_dialog_reward_part5">in</string>
+    <string name="bee7_dialog_reward_part6"></string>
+</resources>

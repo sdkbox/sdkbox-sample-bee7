@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.bee7.gamewall.GameWallFooter
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/gamewall_footer"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/bee7_footer_height"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_gravity="bottom|center_horizontal" >
+
+        <TextView
+            android:id="@+id/bee7_gamewall_footer_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            style="@style/bee7_footer_title"
+            android:textColor="@color/bee7_footer_text_color"/>
+
+        <ImageView
+            android:id="@+id/bee7_gamewall_footer_logo_icon"
+            android:layout_width="@dimen/bee7_stop_video_dialog_header_logo_width"
+            android:layout_height="@dimen/bee7_stop_video_dialog_header_logo_height"
+            android:src="@drawable/bee7_logo" />
+
+    </LinearLayout>
+
+</com.bee7.gamewall.GameWallFooter>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="bee7_ok">TAMAM</string>
+    <string name="bee7_no_internet_connection">İnternet bağlantısı yok</string>
+    <string name="bee7_header_title">Oyunları oyna ve şunu kazan:</string>
+
+    <string name="video_dialog_message">Ödülünü almak için tüm videoyu izle!</string>
+    <string name="video_dialog_keep_watching">İzlemeye Devam Et</string>
+
+    <!--tutorial dialog-->
+    <string name="bee7_dialog_tutorial_playgames">Oyunları oyna</string>
+    <string name="bee7_dialog_tutorial_part1"></string>
+    <string name="bee7_dialog_tutorial_part2">Uygulamasında</string>
+    <string name="bee7_dialog_tutorial_part3">kazan</string>
+
+    <!--redirecting dialog-->
+    <string name="bee7_dialog_redirecting_part1"></string>
+    <string name="bee7_dialog_redirecting_part2">oyna</string>
+    <string name="bee7_dialog_redirecting_part3"></string>
+    <string name="bee7_dialog_redirecting_part4">Uygulamasında</string>
+    <string name="bee7_dialog_redirecting_part5">kazan</string>
+    <string name="bee7_dialog_redirecting">Yeniden yönlendiriliyor</string>
+
+    <!--reward dialog-->
+    <string name="bee7_dialog_reward_part1">Şunu kazandın:</string>
+    <string name="bee7_dialog_reward_part2"></string>
+    <string name="bee7_dialog_reward_part3">yeniden oyna</string>
+    <string name="bee7_dialog_reward_part4"></string>
+    <string name="bee7_dialog_reward_part5">Uygulamasında</string>
+    <string name="bee7_dialog_reward_part6">kazan</string>
+</resources>

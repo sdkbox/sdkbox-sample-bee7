@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- dialog -->
+    <dimen name="bee7_dialog_min_width">245dp</dimen>
+    <dimen name="bee7_dialog_min_height">245dp</dimen>
+    <dimen name="bee7_dialog_text_size">23dp</dimen>
+    <dimen name="bee7_dialog_margin_horizontal">15dp</dimen>
+    <dimen name="bee7_dialog_padding">25dp</dimen>
+    <dimen name="bee7_dialog_padding_top">35dp</dimen>
+    <dimen name="bee7_dialog_publisher_icon_size">30dp</dimen>
+    <dimen name="bee7_dialog_button_padding_horizontal">35dp</dimen>
+    <dimen name="bee7_dialog_advertiser_icon_size">30dp</dimen>
+    <dimen name="bee7_dialog_icon_vc_size">25dp</dimen>
+    <dimen name="bee7_dialog_item_padding">7dp</dimen>
+    <dimen name="bee7_dialog_currency_text_size">35dp</dimen>
+    <dimen name="bee7_dialog_dots_padding_bottom">6dp</dimen>
+    <dimen name="bee7_dialog_dots_padding_left">2dp</dimen>
+    <dimen name="bee7_dialog_icon_arrow_size">40dp</dimen>
+
+    <!-- dialog redirecting -->
+    <dimen name="bee7_dialog_redirect_circle_size">30dp</dimen>
+    <dimen name="bee7_dialog_redirect_circle_padding_left">15dp</dimen>
+    <dimen name="bee7_dialog_redirect_circle_padding_top">15dp</dimen>
+    <dimen name="bee7_dialog_redirect_icon_size">50dp</dimen>
+    <dimen name="bee7_dialog_redirect_circle_text_size">22dp</dimen>
+
+    <!-- dialog reward -->
+    <dimen name="bee7_dialog_reward_vc_icon_size">35dp</dimen>
+    <dimen name="bee7_dialog_reward_advertiser_icon_size_big">55dp</dimen>
+
+</resources>

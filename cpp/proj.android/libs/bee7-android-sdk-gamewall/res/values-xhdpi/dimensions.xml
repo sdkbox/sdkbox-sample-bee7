@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- gamewall_video_dialog -->
+    <dimen name="bee7_dialog_controls_icon_size">45dp</dimen>
+    <dimen name="bee7_dialog_controls_icon_padding">10dp</dimen>
+    <dimen name="bee7_dialog_vertical_margin">0dp</dimen>
+    <dimen name="bee7_dialog_vertical_item_spacing">10dp</dimen>
+    <dimen name="bee7_video_dialog_icon_size">70dp</dimen>
+</resources>

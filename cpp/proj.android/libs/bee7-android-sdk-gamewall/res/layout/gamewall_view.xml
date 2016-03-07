@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.bee7.gamewall.GameWallView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    style="@style/bee7_gamewallStyle">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_alignParentTop="true">
+
+        <include
+            layout="@layout/gamewall_header" />
+
+        <ScrollView
+            style="@style/bee7_gamewallScrollView"
+            android:id="@+id/gamewallScrollView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <include layout="@layout/gamewall_content_container" />
+
+                <include layout="@layout/gamewall_footer" />
+
+            </LinearLayout>
+
+        </ScrollView>
+    </LinearLayout>
+
+</com.bee7.gamewall.GameWallView>

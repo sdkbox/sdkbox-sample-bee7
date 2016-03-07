@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.bee7.gamewall.GameWallUnitOfferListItem
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="0dp"
+    android:layout_height="match_parent"
+    android:layout_weight="1"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.65" >
+
+        <RelativeLayout
+            android:id="@+id/icon_layout"
+            android:layout_width="@dimen/bee7_gamewall_list_item_icon_size"
+            android:layout_height="@dimen/bee7_gamewall_list_item_icon_size"
+            android:layout_centerHorizontal="true"
+            android:layout_alignParentBottom="true">
+
+            <ProgressBar
+                android:id="@+id/gamewallGamesListItemSpinner"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:indeterminate="true"
+                android:visibility="visible"
+                android:padding="10dp"/>
+
+            <com.bee7.gamewall.views.Bee7ImageView
+                android:id="@+id/gamewallGamesListItemIcon"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/gamewallGamesListItemButtonVideoLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_alignLeft="@+id/icon_layout"
+            android:layout_alignStart="@+id/icon_layout"
+            android:layout_marginBottom="@dimen/bee7_gamewall_list_item_icon_vertical_offset"
+            android:layout_marginLeft="@dimen/bee7_gamewall_list_item_icon_horizontal_offset"
+            android:layout_marginStart="@dimen/bee7_gamewall_list_item_icon_horizontal_offset"
+            android:layout_alignParentBottom="true">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_above="@+id/gamewallGamesListItemButtonVideo"
+                android:layout_centerHorizontal="true" >
+
+                <TextView
+                    android:id="@+id/gamewallGamesListItemVideoRewardText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="+##"
+                    android:textColor="@color/bee7_text_color"
+                    android:textSize="@dimen/bee7_gamewall_list_item_reward_text_size"
+                    android:textStyle="bold"
+                    android:gravity="center" />
+
+                <com.bee7.gamewall.views.Bee7ImageView
+                    android:id="@+id/gamewallGamesListItemVideoRewardIcon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/bee7_gamewall_list_item_reward_icon_size"
+                    android:src="@drawable/bee7_icon_reward_mini"
+                    android:adjustViewBounds="true"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="0.5dp"
+                    android:layout_marginLeft="1dp"
+                    android:layout_marginStart="1dp"/>
+
+            </LinearLayout>
+
+            <com.bee7.gamewall.views.Bee7ImageView
+                android:id="@+id/gamewallGamesListItemButtonVideo"
+                android:visibility="visible"
+                android:layout_width="@dimen/bee7_gamewall_button_mini_width"
+                android:layout_height="@dimen/bee7_gamewall_button_mini_height"
+                android:src="@drawable/bee7_btn_play_mini"
+                android:layout_alignParentBottom="true"/>
+
+        </RelativeLayout>
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.30">
+
+        <TextView
+            android:id="@+id/bee7_gamewallGamesListItemTitle"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingLeft="@dimen/bee7_gamewall_list_item_text_horizontal_padding"
+            android:paddingTop="1dp"
+            android:paddingRight="@dimen/bee7_gamewall_list_item_text_horizontal_padding"
+            android:textColor="@color/bee7_text_color"
+            android:textStyle="bold"
+            android:textSize="@dimen/bee7_gamewall_list_item_text_size"
+            android:gravity="center_horizontal"
+            android:lines="2"
+            android:ellipsize="end"/>
+
+    </LinearLayout>
+
+</com.bee7.gamewall.GameWallUnitOfferListItem>

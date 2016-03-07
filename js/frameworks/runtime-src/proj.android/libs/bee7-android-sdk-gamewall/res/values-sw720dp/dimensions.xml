@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- gamewall_unit_offer_banner -->
+    <dimen name="bee7_gamewall_item_banner_height">150dp</dimen>
+    <dimen name="bee7_gamewall_item_banner_padding_horizontal">18dp</dimen>
+    <dimen name="bee7_gamewall_item_banner_icon_size">110dp</dimen>
+    <dimen name="bee7_gamewall_item_banner_progress_padding">20dp</dimen>
+    <dimen name="bee7_gamewall_item_banner_text_size">31dp</dimen>
+
+    <!-- gamewall header -->
+    <dimen name="bee7_gamewall_header_icon_margin">10dp</dimen>
+
+    <!-- gamewall_unit_offer_list_holder -->
+    <dimen name="bee7_games_list_holder_height">270dp</dimen>
+    <dimen name="bee7_games_list_holder_background_offset">260dp</dimen>
+    <dimen name="bee7_games_list_holder_padding_top">10dp</dimen>
+
+    <!-- gamewall_video_dialog -->
+    <dimen name="bee7_dialog_controls_icon_size">85dp</dimen>
+    <dimen name="bee7_dialog_controls_icon_padding">15dp</dimen>
+    <dimen name="bee7_dialog_vertical_margin">50dp</dimen>
+    <dimen name="bee7_dialog_vertical_item_spacing">15dp</dimen>
+    <dimen name="bee7_video_dialog_icon_size">110dp</dimen>
+    <dimen name="bee7_dialog_dl_button_height">58dp</dimen>
+    <dimen name="bee7_dialog_dl_button_width">94dp</dimen>
+
+    <!-- gamewall_unit_offer_list_item -->
+    <dimen name="bee7_gamewall_list_item_icon_size">130dp</dimen>
+    <dimen name="bee7_gamewall_list_item_icon_horizontal_offset">79dp</dimen> <!-- -->
+    <dimen name="bee7_gamewall_list_item_icon_vertical_offset">90dp</dimen> <!-- -->
+    <dimen name="bee7_gamewall_list_item_reward_text_size">18dp</dimen>
+</resources>
