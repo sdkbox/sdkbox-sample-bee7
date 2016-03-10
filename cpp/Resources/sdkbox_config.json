@@ -1,14 +1,14 @@
 {
     "android": {
         "Bee7": {
-            "debug": true, 
-            "key": "7340A8B9-58FF-462B-9611-B1CE0A92DB54"
+            "debug": true,
+            "key": "3FB857DA-ED4A-4EB4-926F-EB959A83305E"
         }
-    }, 
+    },
     "ios": {
         "Bee7": {
-            "debug": true, 
-            "key": "FE74A9C4-1288-4F6F-8D6E-C365699F2C72"
+            "debug": true,
+            "key": "3FB857DA-ED4A-4EB4-926F-EB959A83305E"
         }
     }
 }
