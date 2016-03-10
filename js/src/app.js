@@ -60,7 +60,7 @@ var HelloWorldLayer = cc.Layer.extend({
         });
 
         var winsize = cc.winSize;
-        var menu = new cc.Menu(item1, item2, item3);
+        var menu = new cc.Menu(item1);
         menu.x = winsize.width / 2;
         menu.y = winsize.height / 2;
         menu.alignItemsVerticallyWithPadding(20);

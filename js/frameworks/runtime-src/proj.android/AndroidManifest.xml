@@ -13,7 +13,7 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:host="publisher" android:scheme="_replace_with_your_bee7_scheme_" />
+                <data android:host="publisher" android:scheme="comsdkboxsamplebee7" />
             </intent-filter>
         </activity>
         <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version" />
