@@ -65,7 +65,7 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>comsdkboxsamplebee7</string>
+				<string>comsdkboxsamplebee7cpp</string>
 			</array>
 		</dict>
 	</array>

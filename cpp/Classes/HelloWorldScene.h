@@ -18,6 +18,9 @@ public:
 
 private:
     void createTestMenu();
+    
+    cocos2d::Label *_pointsLabel;
+    cocos2d::Label *_currencyLabel;
 
     virtual void onAvailableChange(bool available);
     virtual void onVisibleChange(bool available);

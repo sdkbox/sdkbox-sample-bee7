@@ -57,9 +57,27 @@ bool HelloWorld::init()
 
 void HelloWorld::createTestMenu()
 {
+    Size size = Director::getInstance()->getVisibleSize();
     auto menu = Menu::create();
 
+    sdkbox::PluginBee7::init();
     sdkbox::PluginBee7::setListener(this);
+    
+    _pointsLabel = Label::createWithSystemFont("0", "sans", 32);
+    _pointsLabel->setPosition(Vec2(size.width / 2 - 100, 100));
+    addChild(_pointsLabel);
+
+    auto label = Label::createWithSystemFont("points", "sans", 32);
+    label->setPosition(Vec2(size.width / 2, 100));
+    addChild(label);
+
+    _currencyLabel = Label::createWithSystemFont("0", "sans", 32);
+    _currencyLabel->setPosition(Vec2(size.width / 2 - 100, 140));
+    addChild(_currencyLabel);
+
+    label = Label::createWithSystemFont("currency", "sans", 32);
+    label->setPosition(Vec2(size.width / 2, 140));
+    addChild(label);
 
     menu->addChild(MenuItemLabel::create(Label::createWithSystemFont("show game wall", "sans", 24), [](Ref*){
         CCLOG("show game wall");
@@ -85,6 +103,14 @@ void HelloWorld::onGameWallWillClose()
     CCLOG("onGameWallWillClose");
 }
 
+template <typename T>
+std::string to_string(T value)
+{
+    std::ostringstream os ;
+    os << value ;
+    return os.str() ;
+}
+
 void HelloWorld::onGiveReward(long bee7Points,
                               long virtualCurrencyAmount,
                               const std::string& appId,
@@ -99,5 +125,7 @@ void HelloWorld::onGiveReward(long bee7Points,
     CCLOG(" - cappedReward: %s", cappedReward ? "YES" : "NO");
     CCLOG(" - campaignId: %ld", campaignId);
     CCLOG(" - videoReward: %s", videoReward ? "YES" : "NO");
+    
+    _pointsLabel->setString(to_string(bee7Points).c_str());
+    _currencyLabel->setString(to_string(virtualCurrencyAmount).c_str());
 }
-

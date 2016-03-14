@@ -18,9 +18,21 @@ function MainScene:onCreate()
 end
 
 function MainScene:setupTestMenu()
+    local pointsLabel = cc.Label:createWithSystemFont("0 points", "sans", 32)
+    pointsLabel:setPosition(display.cx, 100)
+    self:addChild(pointsLabel)
+    local currencyLabel = cc.Label:createWithSystemFont("0 currency", "sans", 32)
+    currencyLabel:setPosition(display.cx, 140)
+    self:addChild(currencyLabel)
+
     sdkbox.PluginBee7:init()
-    sdkbox.PluginBee7:setListener(function(...)
-        dump({...})
+    sdkbox.PluginBee7:setListener(function(evt)
+        dump(evt)
+
+        if evt.name == "onGiveReward" then
+            pointsLabel:setString(string.format("%s points", tostring(evt.points)))
+            currencyLabel:setString(string.format("%s currency", tostring(evt.amount)))
+        end
     end)
 
     local label1 = cc.Label:createWithSystemFont("show game wall", "sans", 28)

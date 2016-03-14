@@ -31,6 +31,16 @@ var HelloWorldLayer = cc.Layer.extend({
     },
 
     createTestMenu:function() {
+        var pointsLabel = cc.LabelTTF.create("0 points", "sans", 32);
+        pointsLabel.x = cc.winSize.width / 2;
+        pointsLabel.y = 100;
+        this.addChild(pointsLabel);
+
+        var currencyLabel = cc.LabelTTF.create("0 currency", "sans", 32);
+        currencyLabel.x = cc.winSize.width / 2;
+        currencyLabel.y = 140;
+        this.addChild(currencyLabel);
+
         sdkbox.PluginBee7.init();
         sdkbox.PluginBee7.setListener({
             onAvailableChange: function(available) {
@@ -51,6 +61,9 @@ var HelloWorldLayer = cc.Layer.extend({
                 cc.log("cappedReward: " + cappedReward.toString());
                 cc.log("campaignId: " + campaignId.toString());
                 cc.log("videoReward: " + videoReward.toString());
+
+                pointsLabel.setString(bee7Points.toString() + " points");
+                currencyLabel.setString(virtualCurrencyAmount.toString() + " currency");
             }
         });
 
