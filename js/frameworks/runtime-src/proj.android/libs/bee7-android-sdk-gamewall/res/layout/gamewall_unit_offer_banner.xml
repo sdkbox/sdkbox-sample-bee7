@@ -66,7 +66,6 @@
                         android:id="@+id/gamewallGamesListItemVideoRewardTextLeft"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="+##"
                         android:textColor="@color/bee7_text_color"
                         android:textSize="@dimen/bee7_gamewall_list_item_reward_text_size"
                         android:textStyle="bold"
@@ -173,7 +172,6 @@
                         android:id="@+id/gamewallGamesListItemVideoRewardText"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="+##"
                         android:textColor="@color/bee7_text_color"
                         android:textSize="@dimen/bee7_gamewall_list_item_reward_text_size"
                         android:textStyle="bold"
@@ -207,11 +205,11 @@
 
     </LinearLayout>
 
-    <FrameLayout
+    <LinearLayout
         android:id="@+id/gamewallGamesListItemVideoPlaceholder"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
-    </FrameLayout>
+    </LinearLayout>
 
 </LinearLayout>

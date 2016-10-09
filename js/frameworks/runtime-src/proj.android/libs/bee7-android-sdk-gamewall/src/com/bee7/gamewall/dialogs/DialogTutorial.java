@@ -27,8 +27,8 @@ public class DialogTutorial extends Bee7Dialog {
 
     private SharedPreferences sharedPreferences;
 
-    public DialogTutorial(Context context) {
-        super(context);
+    public DialogTutorial(Context context, boolean immersiveMode) {
+        super(context, immersiveMode);
         setContentView(R.layout.gamewall_dialog_tutorial);
 
         textPlaygames = (TextView)findViewById(R.id.bee7_dialog_tutorial_text_playgames);
@@ -76,5 +76,9 @@ public class DialogTutorial extends Bee7Dialog {
         if (!sharedPreferences.getBoolean(PREF_DIALOG_TUTORIAL_SHOWN, false)) {
             super.show();
         }
+    }
+
+    public boolean isDialogAllowedToShow() {
+        return !sharedPreferences.getBoolean(PREF_DIALOG_TUTORIAL_SHOWN, false);
     }
 }

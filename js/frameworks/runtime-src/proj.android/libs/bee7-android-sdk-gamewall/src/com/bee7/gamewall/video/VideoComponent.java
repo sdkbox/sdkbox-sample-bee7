@@ -2,10 +2,11 @@ package com.bee7.gamewall.video;
 
 
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -19,6 +20,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
@@ -32,9 +34,14 @@ import com.bee7.gamewall.assets.AnimFactory;
 import com.bee7.gamewall.assets.AssetsManager;
 import com.bee7.gamewall.assets.AssetsManagerSetBitmapTask;
 import com.bee7.gamewall.assets.UnscaledBitmapLoader;
+import com.bee7.gamewall.dialogs.DialogNoInternet;
 import com.bee7.gamewall.interfaces.OnOfferClickListener;
 import com.bee7.gamewall.interfaces.OnVideoRewardGeneratedListener;
-import com.bee7.gamewall.video.exoplayer.ExoVideoPlayer;
+import com.bee7.sdk.adunit.AbstractVideoPlayer;
+import com.bee7.sdk.adunit.DemoUtil;
+import com.bee7.sdk.adunit.VideoCallbackListener;
+import com.bee7.sdk.adunit.VideoPlayerInterface;
+import com.bee7.sdk.adunit.exoplayer.ExoVideoPlayer;
 import com.bee7.gamewall.views.Bee7ImageView;
 import com.bee7.sdk.common.util.Logger;
 import com.bee7.sdk.publisher.Publisher;
@@ -50,11 +57,17 @@ public class VideoComponent extends RelativeLayout {
         void onVideoEnd();
         void onVideoStart();
         void onHide(View v);
+        void onVideoFailedEvent(String appId, String error, boolean isVideoEnabled);
+        void onVideoMuteEvent(String appId, boolean mute);
+        void onVideoPrequalificationWatched(String appId, int watchedProgress, long rewardGiven);
+        void onVideoPrequalificationEnd(String appId, int watchedProgress, long rewardGiven);
+        void onVideoStartEvent(String appId);
+        AppOffersModel getAppOffersModel();
     }
 
     private static final String TAG = VideoComponent.class.toString();
 
-    private Bee7ImageView ctaImage;
+    private ImageView ctaImage;
     private FrameLayout ingamewallVideoLayout;
     private ProgressBar progressBar;
     private RelativeLayout controlsLayout;
@@ -65,6 +78,7 @@ public class VideoComponent extends RelativeLayout {
     private TextView closeNoticeContinueWatching;
     private RelativeLayout ingamewallCtaLayout;
     private Bee7ImageView videoClose;
+    private Bee7ImageView closeNoticeClose;
 
     private VideoPlayerInterface videoPlayerInterface;
     private boolean ctaVisible = false;
@@ -76,11 +90,14 @@ public class VideoComponent extends RelativeLayout {
     private boolean isFullscreen;
 
     private AppOffer appOffer;
-    private Publisher publisher;
     private OnOfferClickListener onOfferClickListener;
     private OnVideoRewardGeneratedListener onVideoRewardGeneratedListener;
     private VideoComponentCallbacks videoComponentCallbacks;
     private AppOfferWithResult appOfferWithResult;
+    private ExoVideoPlayer.GameWallCallback gameWallCallback;
+
+    private int placeForVideo = 0;
+    private boolean immersiveMode = false;
 
     public VideoComponent(Context context) {
         super(context);
@@ -97,16 +114,11 @@ public class VideoComponent extends RelativeLayout {
         init(context);
     }
 
-    public VideoComponent(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
-        init(context);
-    }
-
     private void init(Context context) {
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         inflater.inflate(R.layout.gamewall_video_component, this, true);
 
-        ctaImage = (Bee7ImageView) findViewById(R.id.gamewallGamesListCTAImage);
+        ctaImage = (ImageView) findViewById(R.id.gamewallGamesListCTAImage);
         ingamewallVideoLayout = (FrameLayout) findViewById(R.id.ingamewall_video_layout);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         controlsLayout = (RelativeLayout)findViewById(R.id.ingamewall_controls_layout);
@@ -117,6 +129,7 @@ public class VideoComponent extends RelativeLayout {
         closeNoticeContinueWatching = (TextView)findViewById(R.id.ingamewall_video_notice_text);
         ingamewallCtaLayout = (RelativeLayout) findViewById(R.id.ingamewall_cta_layout);
         videoClose = (Bee7ImageView) findViewById(R.id.ingamewall_video_close);
+        closeNoticeClose = (Bee7ImageView) findViewById(R.id.ingamewall_close_notice_close);
 
         try {
             String fontFile = getContext().getResources().getString(R.string.bee7_font_file);
@@ -139,34 +152,40 @@ public class VideoComponent extends RelativeLayout {
         }
     }
 
-    public void setup(AppOffer _appOffer, Publisher _publisher, OnOfferClickListener _onOfferClickListener,
+    public void setup(AppOffer _appOffer, OnOfferClickListener _onOfferClickListener,
                       OnVideoRewardGeneratedListener _onVideoRewardGeneratedListener, AppOfferWithResult _appOfferWithResult,
-                      final VideoComponentCallbacks _videoComponentCallbacks) {
+                      final VideoComponentCallbacks _videoComponentCallbacks, ExoVideoPlayer.GameWallCallback _gameWallCallback,
+                      boolean _immersiveMode, boolean waitForVideoShow) {
         //TODO fetch fullscreen flag from server
         isFullscreen = false;
+        this.immersiveMode = _immersiveMode;
 
         this.appOffer = _appOffer;
-        this.publisher = _publisher;
         this.onOfferClickListener = _onOfferClickListener;
         this.onVideoRewardGeneratedListener = _onVideoRewardGeneratedListener;
         this.appOfferWithResult = _appOfferWithResult;
         this.videoComponentCallbacks = _videoComponentCallbacks;
+        this.gameWallCallback = _gameWallCallback;
 
-        ViewGroup rootView = ((ViewGroup) ((Activity) getContext()).findViewById(android.R.id.content));
-        if (isFullscreen) {
+        if (isFullscreen) { //TODO
             //LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
             //        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
             //videoPartLayout.setLayoutParams(params);
         } else {
+            WindowManager wm = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
+            Display display = wm.getDefaultDisplay();
+
             if (Utils.isPortrate(getContext())) {
-                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                        AnimFactory.getVideoViewHeight(rootView, -(getResources().getDimensionPixelSize(R.dimen.bee7_ingamewall_video_margin_vertical))));
+                Logger.debug("placeForVideo", "width " + display.getWidth());
+
+                //we calculate the available width for video (subtract padding or margins if necessary)
+                placeForVideo = display.getWidth();
+
+                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                        placeForVideo,
+                        AnimFactory.getVideoViewHeight(placeForVideo));
                 setLayoutParams(params);
             } else {
-                int placeForVideo = 0;
-                WindowManager wm = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
-                Display display = wm.getDefaultDisplay();
-
                 Logger.debug("placeForVideo", "height " + display.getHeight());
 
                 placeForVideo = display.getHeight()
@@ -186,7 +205,7 @@ public class VideoComponent extends RelativeLayout {
             }
         }
 
-        videoPlayerInterface = new ExoVideoPlayer(getContext(), appOffer.getVideoUrl(), 0, false, false, new VideoCallbackListener() {
+        videoPlayerInterface = new ExoVideoPlayer(getContext(), appOffer.getVideoUrl(), 0, false, true, waitForVideoShow, new VideoCallbackListener() {
             @TargetApi(Build.VERSION_CODES.HONEYCOMB)
             @Override
             public ViewGroup onSurfaceView(TextureView surfaceView) {
@@ -197,153 +216,28 @@ public class VideoComponent extends RelativeLayout {
             }
 
             @Override
-            public void onError(String e) {
-                Logger.debug("ExoVideoPlayer", "onError " + e);
-                publisher.onVideoFailedEvent(appOffer.getId(), e);
+            public void onError(String e, boolean isVideoDisabled) {
+                Logger.debug("ExoVideoPlayer", "onError: " + e + ", isVideoDisabled: " + isVideoDisabled);
+                videoComponentCallbacks.onVideoFailedEvent(appOffer.getId(), e, isVideoDisabled);
 
-                ctaImage.setVisibility(VISIBLE);
+                ctaImage.setVisibility(View.VISIBLE);
                 ctaVisible = true;
+                videoVisible = false;
+                progressBar.setVisibility(View.GONE);
 
-                videoPlayerInterface = new NativeVideoPlayer(getContext(), appOffer.getVideoUrl(), 0, false, true, new VideoCallbackListener() {
-                    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-                    @Override
-                    public ViewGroup onSurfaceView(TextureView surfaceView) {
-                        ingamewallVideoLayout.removeAllViews();
-                        ingamewallVideoLayout.setAlpha(0.0f);
-                        ingamewallVideoLayout.addView(surfaceView);
-                        return ingamewallVideoLayout;
-                    }
+                if (!com.bee7.sdk.common.util.Utils.isOnline(getContext())) {
+                    new DialogNoInternet(getContext(), immersiveMode).show();
+                    onVideoEnd(0, false);
+                    videoVisible = false;
+                    return;
+                }
 
-                    @Override
-                    public void onError(String e) {
-                        publisher.onVideoFailedEvent(appOffer.getId(), e);
-                        Logger.debug("NativeVideoPlayer", "onError " + e);
-                        videoVisible = false;
-                    }
-
-                    @Override
-                    public void onVideoEnd(int videoPlayed, boolean error) {
-                        if (closeNoticeLayout.isShown()) {
-                            closeNoticeLayout.setVisibility(GONE);
-                            isCloseNoticeShown = false;
-                        }
-
-                        reportVideoWatchedEvent();
-
-                        if (appOffer != null
-                                && !error
-                                && onVideoRewardGeneratedListener != null
-                                && videoPlayed >= 98 //if video was watched more than 98%. I choose 98 instead of 100 because I don't trust player position reporting on all devices.
-                                //&& !alreadyWatched
-                                && (publisher.getAppOffersModel().getVideoPrequaificationlType() == AppOffersModel.VideoPrequalType.FULLSCREEN_REWARD
-                                || publisher.getAppOffersModel().getVideoPrequaificationlType() == AppOffersModel.VideoPrequalType.INLINE_REWARD)) {
-
-                            onVideoRewardGeneratedListener.onVideoRewardGenerated(appOffer);
-                        }
-
-                        controlsHandler.removeCallbacksAndMessages(null);
-
-                        ctaImage.setVisibility(VISIBLE);
-                        ctaVisible = true;
-
-                        if (!error) {
-                            if (isFullscreen) {
-                                ingamewallCtaLayout.setVisibility(VISIBLE);
-                            }
-                            ctaImage.setVisibility(VISIBLE);
-                            ingamewallVideoLayout.setVisibility(INVISIBLE);
-                            controlsLayout.setVisibility(GONE);
-                            ctaVisible = true;
-
-                            if (videoComponentCallbacks != null) {
-                                videoComponentCallbacks.onVideoEnd();
-                            }
-
-                            Animation videoViewHideAnim = AnimFactory.createAlphaHide(ingamewallVideoLayout);
-                            videoViewHideAnim.setDuration(AnimFactory.ANIMATION_DURATION_LONG);
-
-                            videoViewHideAnim.setAnimationListener(new Animation.AnimationListener() {
-                                @Override
-                                public void onAnimationStart(Animation animation) {
-                                }
-
-                                @Override
-                                public void onAnimationEnd(Animation animation) {
-                                    if (ingamewallVideoLayout != null) {
-                                        ingamewallVideoLayout.setVisibility(INVISIBLE);
-                                    }
-                                }
-
-                                @Override
-                                public void onAnimationRepeat(Animation animation) {
-                                }
-                            });
-                            videoVisible = false;
-                            ingamewallVideoLayout.startAnimation(videoViewHideAnim);
-                        }
-
-                        ((Activity)getContext()).getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-                    }
-
-                    @Override
-                    public void onVideoStart() {
-                        Logger.debug(TAG, "onVideoStart");
-                        showTimedControlsVisibility();
-
-                        reportVideoStartEvent();
-
-                        if (videoComponentCallbacks != null) {
-                            videoComponentCallbacks.onVideoStart();
-                        }
-
-                        if (!videoVisible) {
-                            Animation videoViewHideAnim = AnimFactory.createAlphaShow(ingamewallVideoLayout, false);
-                            videoViewHideAnim.setDuration(AnimFactory.ANIMATION_DURATION_LONG);
-                            videoViewHideAnim.setAnimationListener(new Animation.AnimationListener() {
-                                @Override
-                                public void onAnimationStart(Animation animation) {
-                                    if (ingamewallVideoLayout != null) {
-                                        ingamewallVideoLayout.setVisibility(VISIBLE);
-                                    }
-                                }
-
-                                @Override
-                                public void onAnimationEnd(Animation animation) { }
-
-                                @Override
-                                public void onAnimationRepeat(Animation animation) { }
-                            });
-                            videoVisible = true;
-                            ingamewallVideoLayout.startAnimation(videoViewHideAnim);
-                        }
-
-                        ((Activity)getContext()).getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-                    }
-
-                    @Override
-                    public void onBuffer(boolean buffering) {
-                        if (buffering) {
-                            //show progress
-                            progressBar.setVisibility(View.VISIBLE);
-                        } else {
-                            //hide progress
-                            progressBar.setVisibility(View.GONE);
-                        }
-                    }
-
-                    @Override
-                    public void onTimeToEndUpdate(long progress) {
-                        if(circleCounter != null) {
-                            circleCounter.setText(String.valueOf(progress));
-                        }
-                    }
-                });
             }
 
             @Override
             public void onVideoEnd(int videoPlayed, boolean error) {
                 if (closeNoticeLayout.isShown()) {
-                    closeNoticeLayout.setVisibility(GONE);
+                    closeNoticeLayout.setVisibility(View.GONE);
                     isCloseNoticeShown = false;
                 }
 
@@ -352,23 +246,25 @@ public class VideoComponent extends RelativeLayout {
                 if (appOffer != null
                         && !error
                         && onVideoRewardGeneratedListener != null
-                        && videoPlayed >= 98 //if video was watched more than 98%. I choose 98 instead of 100 because I don't trust player position reporting on all devices.
+                        && videoPlayed >= 90 //if video was watched more than 90%. I choose 90 instead of 100 because I don't trust player position reporting on all devices.
                         //&& !alreadyWatched
-                        && (publisher.getAppOffersModel().getVideoPrequaificationlType() == AppOffersModel.VideoPrequalType.FULLSCREEN_REWARD
-                        || publisher.getAppOffersModel().getVideoPrequaificationlType() == AppOffersModel.VideoPrequalType.INLINE_REWARD)) {
+                        && (videoComponentCallbacks.getAppOffersModel().getVideoPrequaificationlType() == AppOffersModel.VideoPrequalType.FULLSCREEN_REWARD
+                        || videoComponentCallbacks.getAppOffersModel().getVideoPrequaificationlType() == AppOffersModel.VideoPrequalType.INLINE_REWARD)) {
 
                     onVideoRewardGeneratedListener.onVideoRewardGenerated(appOffer);
                 }
 
-                controlsHandler.removeCallbacksAndMessages(null);
+                if(controlsHandler != null) {
+                    controlsHandler.removeCallbacksAndMessages(null);
+                }
 
                 if (!error) {
                     if (isFullscreen) {
-                        ingamewallCtaLayout.setVisibility(VISIBLE);
+                        ingamewallCtaLayout.setVisibility(View.VISIBLE);
                     }
-                    ctaImage.setVisibility(VISIBLE);
-                    ingamewallVideoLayout.setVisibility(INVISIBLE);
-                    controlsLayout.setVisibility(GONE);
+                    ctaImage.setVisibility(View.VISIBLE);
+                    ingamewallVideoLayout.setVisibility(View.GONE);
+                    controlsLayout.setVisibility(View.GONE);
                     ctaVisible = true;
 
                     if (videoComponentCallbacks != null) {
@@ -386,8 +282,10 @@ public class VideoComponent extends RelativeLayout {
                         @Override
                         public void onAnimationEnd(Animation animation) {
                             if (ingamewallVideoLayout != null) {
-                                ingamewallVideoLayout.setVisibility(INVISIBLE);
+                                ingamewallVideoLayout.setVisibility(View.GONE);
+                                ingamewallVideoLayout.removeAllViews();
                             }
+                            System.gc();
                         }
 
                         @Override
@@ -396,9 +294,18 @@ public class VideoComponent extends RelativeLayout {
                     });
                     videoVisible = false;
                     ingamewallVideoLayout.startAnimation(videoViewHideAnim);
+
+                    if (videoPlayerInterface != null) {
+                        videoPlayerInterface.onDestroy();
+                    }
+                    videoPlayerInterface = null;
+                    if (controlsHandler != null) {
+                        controlsHandler.removeCallbacksAndMessages(null);
+                    }
+                    controlsHandler = null;
                 }
 
-                ((Activity)getContext()).getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                setKeepScreenOn(false);
             }
 
             @Override
@@ -411,7 +318,7 @@ public class VideoComponent extends RelativeLayout {
                 }
 
                 if (ingamewallCtaLayout != null) {
-                    ingamewallCtaLayout.setVisibility(View.INVISIBLE);
+                    ingamewallCtaLayout.setVisibility(View.GONE);
                 }
 
                 if (!videoVisible) {
@@ -423,7 +330,7 @@ public class VideoComponent extends RelativeLayout {
                         @Override
                         public void onAnimationStart(Animation animation) {
                             if (ingamewallVideoLayout != null) {
-                                ingamewallVideoLayout.setVisibility(VISIBLE);
+                                ingamewallVideoLayout.setVisibility(View.VISIBLE);
                             }
                         }
 
@@ -437,7 +344,7 @@ public class VideoComponent extends RelativeLayout {
                     ingamewallVideoLayout.startAnimation(videoViewHideAnim);
                 }
 
-                ((Activity)getContext()).getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                setKeepScreenOn(true);
             }
 
             @Override
@@ -457,7 +364,12 @@ public class VideoComponent extends RelativeLayout {
                     circleCounter.setText(String.valueOf(progress));
                 }
             }
-        }, publisher.getAppOffersModel().getVideoPrequalGlobalConfig());
+
+            @Override
+            public void onProgress(long progress, long max) {
+                //not used
+            }
+        }, videoComponentCallbacks.getAppOffersModel().getVideoPrequalGlobalConfig(), gameWallCallback);
 
         if(!TextUtils.isEmpty(appOffer.getCreativeUrl())) {
             try {
@@ -473,8 +385,9 @@ public class VideoComponent extends RelativeLayout {
                         }
                     }
                 };
+                task.setParams(appOffer);
 
-                AssetsManager.getInstance().runIconTask(task);
+                AssetsManager.getInstance().runEndScreenTask(task, AnimFactory.getVideoViewHeight(placeForVideo), placeForVideo);
             } catch (Exception ignored) {
                 setOfferIconAsCreative(appOffer);
             }
@@ -503,7 +416,7 @@ public class VideoComponent extends RelativeLayout {
         closeNoticeLayout.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                closeNoticeLayout.setVisibility(GONE);
+                closeNoticeLayout.setVisibility(View.GONE);
                 isCloseNoticeShown = false;
                 if (videoPlayerInterface != null) {
                     if (videoPlayerInterface.isVideoAtEnd()) {
@@ -518,7 +431,7 @@ public class VideoComponent extends RelativeLayout {
         closeNoticeContinueWatching.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                closeNoticeLayout.setVisibility(GONE);
+                closeNoticeLayout.setVisibility(View.GONE);
                 isCloseNoticeShown = false;
                 if (videoPlayerInterface != null) {
                     if (videoPlayerInterface.isVideoAtEnd()) {
@@ -533,7 +446,7 @@ public class VideoComponent extends RelativeLayout {
         videoMute.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (videoPlayerInterface.toggleSound()) {
+                if (videoPlayerInterface != null && videoPlayerInterface.toggleSound(true)) {
                     videoMute.setImageDrawable(getResources().getDrawable(R.drawable.bee7_btn_sound_on));
                     reportVideoMuteEvent(false);
                 } else {
@@ -570,6 +483,16 @@ public class VideoComponent extends RelativeLayout {
                 }
             });
         }
+        if (closeNoticeClose != null) {
+            closeNoticeClose.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (videoComponentCallbacks != null) {
+                        videoComponentCallbacks.onHide(closeNoticeClose);
+                    }
+                }
+            });
+        }
     }
 
     private void setOfferIconAsCreative(AppOffer appOffer) {
@@ -587,24 +510,29 @@ public class VideoComponent extends RelativeLayout {
                 }
             }
         };
+        task.setParams(appOffer);
         task.setSourceImageDPI(screenDPI);
         AssetsManager.getInstance().runIconTask(task);
     }
 
     private void showTimedControlsVisibility() {
-        controlsLayout.setVisibility(VISIBLE);
+        controlsLayout.setVisibility(View.VISIBLE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             controlsLayout.setAlpha(1f);
         }
         ctaVisible = false;
-        videoPlayerInterface.showMediaController();
+        if (videoPlayerInterface != null) {
+            videoPlayerInterface.showMediaController();
+        }
 
-        controlsHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                hideControlsVisibility();
-            }
-        }, DemoUtil.TOGGLE_CONTROLS_TIME);
+        if(controlsHandler != null) {
+            controlsHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    hideControlsVisibility();
+                }
+            }, DemoUtil.TOGGLE_CONTROLS_TIME);
+        }
     }
 
     private void hideControlsVisibility() {
@@ -612,11 +540,13 @@ public class VideoComponent extends RelativeLayout {
             controlsLayout.setAlpha(0.75f);
         }
         ctaVisible = false;
-        videoPlayerInterface.hideMediaController();
+        if (videoPlayerInterface != null) {
+            videoPlayerInterface.hideMediaController();
+        }
     }
 
     public void showCloseNotice() {
-        closeNoticeLayout.setVisibility(VISIBLE);
+        closeNoticeLayout.setVisibility(View.VISIBLE);
         isCloseNoticeShown = true;
         if (videoPlayerInterface != null) {
             videoPlayerInterface.pauseVideo();
@@ -626,12 +556,22 @@ public class VideoComponent extends RelativeLayout {
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        videoPlayerInterface.onDestroy();
+        if(videoPlayerInterface != null) {
+            videoPlayerInterface.onDestroy();
+        }
         videoPlayerInterface = null;
-        controlsHandler.removeCallbacksAndMessages(null);
+        if(controlsHandler != null) {
+            controlsHandler.removeCallbacksAndMessages(null);
+        }
         controlsHandler = null;
         appOffer = null;
-        publisher = null;
+
+        Drawable drawable = ctaImage.getDrawable();
+        if (drawable instanceof BitmapDrawable) {
+            BitmapDrawable bitmapDrawable = (BitmapDrawable) drawable;
+            Bitmap bitmap = bitmapDrawable.getBitmap();
+            bitmap.recycle();
+        }
         ctaImage.setImageDrawable(null);
         ctaImage.destroyDrawingCache();
         ctaImage = null;
@@ -655,10 +595,15 @@ public class VideoComponent extends RelativeLayout {
     public boolean replayVideo() {
         watchedAlreadyReported = false;
         startAlreadyReported = false;
+        if (videoPlayerInterface == null) {
+            setup(appOffer, onOfferClickListener, onVideoRewardGeneratedListener,
+                    appOfferWithResult, videoComponentCallbacks, gameWallCallback, immersiveMode,
+                    false);
+        }
         return videoPlayerInterface != null && videoPlayerInterface.replayVideo();
     }
 
-    public int getProgress() {
+    private int getProgress() {
         if (videoPlayerInterface != null) {
             return videoPlayerInterface.getProgress();
         }
@@ -666,7 +611,10 @@ public class VideoComponent extends RelativeLayout {
     }
 
     public boolean isVideoPlaying() {
-        return videoPlayerInterface.isVideoPlaying();
+        if (videoPlayerInterface != null) {
+            return videoPlayerInterface.isVideoPlaying();
+        }
+        return false;
     }
 
     public boolean isCtaShowing() {
@@ -678,7 +626,7 @@ public class VideoComponent extends RelativeLayout {
     }
 
     public void reportVideoMuteEvent(boolean mute) {
-        publisher.onVideoMuteEvent(appOffer.getId(), mute);
+        videoComponentCallbacks.onVideoMuteEvent(appOffer.getId(), mute);
     }
 
     /**
@@ -687,22 +635,35 @@ public class VideoComponent extends RelativeLayout {
     public void reportVideoWatchedEvent() {
         if (!watchedAlreadyReported) {
             watchedAlreadyReported = true;
-            publisher.onVideoPrequalificationWatched(appOffer.getId(), getProgress(), appOffer.getVideoReward());
+
+            if (getProgress() >= ExoVideoPlayer.PROGRESS_END) {
+                videoComponentCallbacks.onVideoPrequalificationEnd(appOffer.getId(), getProgress(), appOffer.getVideoReward());
+            } else {
+                videoComponentCallbacks.onVideoPrequalificationWatched(appOffer.getId(), getProgress(), appOffer.getVideoReward());
+            }
         }
     }
 
     public void reportVideoStartEvent() {
-        if (videoPlayerInterface.isVideoPlaying() && !startAlreadyReported) {
+        if (videoPlayerInterface != null && videoPlayerInterface.isVideoPlaying() && !startAlreadyReported) {
             startAlreadyReported = true;
-            publisher.onVideoStartEvent(appOffer.getId());
+            videoComponentCallbacks.onVideoStartEvent(appOffer.getId());
         }
     }
 
-    public void setCloseButton(boolean show) {
+    public void showCloseButton(boolean show) {
         if (show) {
-            videoClose.setVisibility(VISIBLE);
+            videoClose.setVisibility(View.VISIBLE);
         } else {
-            videoClose.setVisibility(GONE);
+            videoClose.setVisibility(View.GONE);
+        }
+    }
+
+    public void showCloseNoticeCloseButton(boolean show) {
+        if (show) {
+            closeNoticeClose.setVisibility(View.VISIBLE);
+        } else {
+            closeNoticeClose.setVisibility(View.GONE);
         }
     }
 

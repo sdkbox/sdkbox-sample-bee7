@@ -1,23 +1,14 @@
 
 #include "PluginBee7JSHelper.h"
-#include "cocos2d_specifics.hpp"
 #include "SDKBoxJSHelper.h"
 #include "PluginBee7/PluginBee7.h"
 
 static JSContext* s_cx = nullptr;
 
-class Bee7ListenerJsHelper : public sdkbox::Bee7Listener
+class Bee7ListenerJsHelper : public sdkbox::Bee7Listener, public sdkbox::JSListenerBase
 {
-
 public:
-    void setJSDelegate(JSObject* delegate)
-    {
-        mJsDelegate = delegate;
-    }
-
-    JSObject* getJSDelegate()
-    {
-        return mJsDelegate;
+    Bee7ListenerJsHelper():sdkbox::JSListenerBase() {
     }
 
     void onAvailableChange(bool available)
@@ -66,7 +57,7 @@ private:
         JSContext* cx = s_cx;
         const char* func_name = fName.c_str();
 
-        JS::RootedObject obj(cx, mJsDelegate);
+        JS::RootedObject obj(cx, getJSDelegate());
         JSAutoCompartment ac(cx, obj);
 
 #if MOZJS_MAJOR_VERSION >= 31
@@ -106,10 +97,6 @@ private:
 #endif
         }
     }
-
-private:
-    JSObject* mJsDelegate;
-
 };
 
 
@@ -129,11 +116,10 @@ JSBool js_PluginBee7JS_PluginBee7_setListener(JSContext *cx, unsigned argc, JS::
         {
             ok = false;
         }
-        JSObject *tmpObj = args.get(0).toObjectOrNull();
 
         JSB_PRECONDITION2(ok, cx, false, "js_PluginBee7JS_PluginBee7_setListener : Error processing arguments");
         Bee7ListenerJsHelper* lis = new Bee7ListenerJsHelper();
-        lis->setJSDelegate(tmpObj);
+        lis->setJSDelegate(args.get(0));
         sdkbox::PluginBee7::setListener(lis);
 
         args.rval().setUndefined();

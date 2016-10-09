@@ -3,14 +3,14 @@
 
     <item android:right="15dp">
         <shape android:shape="oval">
-            <solid android:color="#000000" />
+            <solid android:color="@color/bee7_text_color" />
             <size android:height="@dimen/bee7_loading_dot_size" android:width="@dimen/bee7_loading_dot_size" />
         </shape>
     </item>
 
     <item android:left="7.5dp" android:right="7.5dp">
         <shape android:shape="oval">
-            <solid android:color="#000000" />
+            <solid android:color="@color/bee7_text_color" />
             <size android:height="@dimen/bee7_loading_dot_size" android:width="@dimen/bee7_loading_dot_size" />
         </shape>
     </item>

@@ -8,7 +8,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -21,8 +20,11 @@ import com.bee7.gamewall.interfaces.OnVideoClickListener;
 import com.bee7.gamewall.interfaces.OnVideoRewardGeneratedListener;
 import com.bee7.gamewall.interfaces.OnVideoWithRewardPlayingListener;
 import com.bee7.gamewall.video.VideoComponent;
+import com.bee7.sdk.adunit.exoplayer.ExoVideoPlayer;
 import com.bee7.gamewall.views.Bee7ImageView;
 import com.bee7.sdk.common.util.*;
+import com.bee7.sdk.common.util.Utils;
+import com.bee7.sdk.publisher.DefaultPublisher;
 import com.bee7.sdk.publisher.GameWallConfiguration;
 import com.bee7.sdk.publisher.Publisher;
 import com.bee7.sdk.publisher.appoffer.AppOffer;
@@ -44,7 +46,7 @@ public class GameWallUnitOfferBanner extends GameWallUnitOffer {
     private Bee7ImageView videoButton;
     private TextView videoRewardText;
     private ImageView videoRewardIcon;
-    private FrameLayout videoPlaceholder;
+    private LinearLayout videoPlaceholder;
     private LinearLayout titleLayout;
 
     private Animation videoViewExpansionAnim;
@@ -63,7 +65,7 @@ public class GameWallUnitOfferBanner extends GameWallUnitOffer {
                                    int _index, int _indexV, int _column, float exchangeRate) {
         super(context, _appOffer, maxDailyRewardFreq, _onOfferClickListener, _onVideoClickListener,
                 _videoPrequaificationlType, _unitType, _videoButtonPosition, _index, _indexV, _column);
-
+        Logger.debug(TAG, "instantiating GameWallUnitOfferBanner " + appOffer.getLocalizedName() + " " + appOffer.getId());
         inflate(getContext(), R.layout.gamewall_unit_offer_banner, this);
 
         icon = (Bee7ImageView) findViewById(R.id.gamewallGamesListItemIcon);
@@ -76,7 +78,7 @@ public class GameWallUnitOfferBanner extends GameWallUnitOffer {
         buttonVideoLayout = (RelativeLayout) findViewById(R.id.gamewallGamesListItemButtonVideoLayout);
         buttonVideoLayoutLeft = (RelativeLayout) findViewById(R.id.gamewallGamesListItemButtonVideoLayoutLeft);
         spinner = (ProgressBar) findViewById(R.id.gamewallGamesListItemSpinner);
-        videoPlaceholder = (FrameLayout) findViewById(R.id.gamewallGamesListItemVideoPlaceholder);
+        videoPlaceholder = (LinearLayout) findViewById(R.id.gamewallGamesListItemVideoPlaceholder);
 
         this.exchangeRate = exchangeRate;
 
@@ -99,7 +101,7 @@ public class GameWallUnitOfferBanner extends GameWallUnitOffer {
 
     @Override
     public void update(AppOffer _appOffer) {
-        Logger.debug("GameWallUnitOfferBanner", "update banner " + appOffer.getLocalizedName() + " " + appOffer.getId());
+        Logger.debug(TAG, "update banner " + appOffer.getLocalizedName() + " " + appOffer.getId());
         super.update(_appOffer);
 
         if (videoPrequaificationlType == AppOffersModel.VideoPrequalType.NO_VIDEO ||
@@ -127,7 +129,7 @@ public class GameWallUnitOfferBanner extends GameWallUnitOffer {
         }
 
         //we need to check android api level and if offer supports video
-        if (canVideoBePlayed() &&
+        if (com.bee7.sdk.common.util.Utils.canVideoBePlayed(getContext(), _appOffer, videoPrequaificationlType) &&
                 videoButton != null) {
 
             // offer with video
@@ -278,15 +280,20 @@ public class GameWallUnitOfferBanner extends GameWallUnitOffer {
         setAppOfferIcon();
     }
 
+    @Override
+    public void update() {
+        update(appOffer);
+    }
+
     private OnClickListener onVideoBtnClickListener = new OnClickListener() {
         @Override
         public void onClick(View v) {
-            if (canVideoBePlayed() &&
+            if (Utils.canVideoBePlayed(getContext(), appOffer, videoPrequaificationlType) &&
                     videoButton != null)
             {
                 synchronized (GameWallView.lastClickSync) {
-                    // mis-clicking prevention, using threshold of 1000 ms
-                    if ((SystemClock.elapsedRealtime() - GameWallView.lastClickTimestamp) < 1000) {
+                    // mis-clicking prevention, using threshold of 500 ms
+                    if ((SystemClock.elapsedRealtime() - GameWallView.lastClickTimestamp) < 500) {
                         GameWallView.lastClickTimestamp = SystemClock.elapsedRealtime();
                         return;
                     }
@@ -305,8 +312,8 @@ public class GameWallUnitOfferBanner extends GameWallUnitOffer {
         public void onClick(View v) {
             if (onOfferClickListener != null) {
                 synchronized (GameWallView.lastClickSync) {
-                    // mis-clicking prevention, using threshold of 1000 ms
-                    if ((SystemClock.elapsedRealtime() - GameWallView.lastClickTimestamp) < 1000) {
+                    // mis-clicking prevention, using threshold of 500 ms
+                    if ((SystemClock.elapsedRealtime() - GameWallView.lastClickTimestamp) < 500) {
                         GameWallView.lastClickTimestamp = SystemClock.elapsedRealtime();
                         return;
                     }
@@ -325,7 +332,7 @@ public class GameWallUnitOfferBanner extends GameWallUnitOffer {
 
     public void addVideoView(final Publisher publisher, OnVideoRewardGeneratedListener onVideoRewardGeneratedListener) {
         videoComponent = new VideoComponent(getContext());
-        videoComponent.setup(appOffer, publisher, onOfferClickListener, onVideoRewardGeneratedListener, appOfferWithResult, new VideoComponent.VideoComponentCallbacks() {
+        videoComponent.setup(appOffer, onOfferClickListener, onVideoRewardGeneratedListener, appOfferWithResult, new VideoComponent.VideoComponentCallbacks() {
             @Override
             public void onVideoEnd() {
 
@@ -340,8 +347,8 @@ public class GameWallUnitOfferBanner extends GameWallUnitOffer {
             public void onHide(View v) {
                 synchronized (GameWallView.lastClickSync) {
                     synchronized (GameWallView.lastClickSync) {
-                        // mis-clicking prevention, using threshold of 1000 ms
-                        if ((SystemClock.elapsedRealtime() - GameWallView.lastClickTimestamp) < 1000) {
+                        // mis-clicking prevention, using threshold of 500 ms
+                        if ((SystemClock.elapsedRealtime() - GameWallView.lastClickTimestamp) < 500) {
                             GameWallView.lastClickTimestamp = SystemClock.elapsedRealtime();
                             return;
                         }
@@ -352,7 +359,11 @@ public class GameWallUnitOfferBanner extends GameWallUnitOffer {
                                 new SharedPreferencesRewardsHelper(getContext(), publisher.getAppOffersModel().getVideoPrequalGlobalConfig().getMaxDailyRewardFreq())
                                         .hasBeenRewardAlreadyGiven(appOffer.getId(), appOffer.getCampaignId());
 
-                        if (publisher.getAppOffersModel().getVideoPrequaificationlType() == AppOffersModel.VideoPrequalType.INLINE_REWARD && !rewardAlreadyGiven) {
+                        if (publisher.getAppOffersModel().getVideoPrequaificationlType() == AppOffersModel.VideoPrequalType.INLINE_REWARD
+                                &&
+                                !rewardAlreadyGiven
+                                &&
+                                !isCloseNoticeShowing()) {
                             showCloseNotice();
                         } else {
                             removeVideoView(null, true, null, false);
@@ -360,9 +371,45 @@ public class GameWallUnitOfferBanner extends GameWallUnitOffer {
                     }
                 }
             }
-        });
-        videoComponent.setTag("video");
 
+            @Override
+            public void onVideoFailedEvent(String appId, String error, boolean isVideoEnabled) {
+                publisher.onVideoFailedEvent(appId, error, isVideoEnabled);
+            }
+
+            @Override
+            public void onVideoMuteEvent(String appId, boolean mute) {
+                publisher.onVideoMuteEvent(appId, mute);
+            }
+
+            @Override
+            public void onVideoPrequalificationWatched(String appId, int watchedProgress, long rewardGiven) {
+                publisher.onVideoPrequalificationWatched(appId, watchedProgress, rewardGiven, DefaultPublisher.gwUnitId);
+            }
+
+            @Override
+            public void onVideoPrequalificationEnd(String appId, int watchedProgress, long rewardGiven) {
+                publisher.onVideoPrequalificationWatched(appId, 100, rewardGiven, DefaultPublisher.gwUnitId);
+            }
+
+            @Override
+            public void onVideoStartEvent(String appId) {
+                publisher.onVideoStartEvent(appId);
+            }
+
+            @Override
+            public AppOffersModel getAppOffersModel() {
+                return publisher.getAppOffersModel();
+            }
+        }, new ExoVideoPlayer.GameWallCallback() {
+            @Override
+            public void refreshGameWall() {
+                //Offer banner is not used
+            }
+        }, false, true);
+        videoComponent.setTag("video");
+        videoComponent.showCloseButton(true);
+        videoComponent.showCloseNoticeCloseButton(true);
 
         if (videoViewExpansionAnim == null || videoViewExpansionAnim.hasEnded()
                 || videoViewCollapseAnim == null || videoViewCollapseAnim.hasEnded()) {

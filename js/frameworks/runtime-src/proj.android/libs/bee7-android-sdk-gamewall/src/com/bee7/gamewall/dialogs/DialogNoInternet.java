@@ -15,8 +15,8 @@ public class DialogNoInternet extends Bee7Dialog {
     private TextView textNoInternet;
     private TextView buttonOK;
 
-    public DialogNoInternet(Context context) {
-        super(context);
+    public DialogNoInternet(Context context, boolean immersiveMode) {
+        super(context, immersiveMode);
 
         setContentView(R.layout.gamewall_dialog_no_internet);
 

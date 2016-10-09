@@ -94,6 +94,26 @@
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowIsFloating">false</item>
         <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowFrame">@null</item>
+        <item name="android:windowFullscreen">true</item>
+    </style>
+
+    <style name="GameWallDialogTheme" parent="@android:style/Theme.Dialog">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowFrame">@null</item>
+        <item name="android:windowFullscreen">true</item>
+    </style>
+
+    <style name="Bee7BannerNotificationAnimationTopDown">
+        <item name="android:windowEnterAnimation">@anim/bee7_banner_notification_slide_down_from_top</item>
+        <item name="android:windowExitAnimation">@anim/bee7_banner_notification_slide_up_to_top</item>
+    </style>
+
+    <style name="Bee7BannerNotificationAnimationBottomUp">
+        <item name="android:windowEnterAnimation">@anim/bee7_banner_notification_slide_up_from_bottom</item>
+        <item name="android:windowExitAnimation">@anim/bee7_banner_notification_slide_down_to_bottom</item>
     </style>
 
     <!-- Header -->
@@ -116,6 +136,7 @@
         <item name="android:windowIsFloating">false</item>
         <item name="android:backgroundDimEnabled">false</item>
         <item name="android:windowFullscreen">true</item>
+        <item name="android:windowFrame">@null</item>
     </style>
 
     <!-- other -->
@@ -131,4 +152,59 @@
         <item name="android:paddingRight">@dimen/bee7_dialog_button_padding_horizontal</item>
     </style>
 
+    <!-- locked minigame -->
+    <style name="bee7_locked_minigam_icon_text">
+        <item name="android:background">@drawable/bee7_icon_lock</item>
+        <item name="android:textColor">@color/bee7_locked_offer_icon_text_color</item>
+        <item name="android:textSize">@dimen/bee7_locked_minigame_icon_text_size</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:paddingLeft">5dp</item>
+        <item name="android:paddingTop">@dimen/bee7_locked_minigame_icon_text_padding_top</item>
+        <item name="android:paddingRight">5dp</item>
+        <item name="android:paddingBottom">3dp</item>
+        <item name="android:shadowColor">#CCffffff</item>
+        <item name="android:shadowDy">2</item>
+        <item name="android:shadowRadius">1</item>
+    </style>
+
+    <!-- banner notification-->
+    <style name="bee7_banner_notification_close">
+        <item name="android:layout_width">@dimen/bee7_banner_notification_close_size</item>
+        <item name="android:layout_height">@dimen/bee7_banner_notification_close_size</item>
+        <item name="android:src">@drawable/bee7_banner_close</item>
+    </style>
+
+    <style name="bee7_banner_notification_button">
+        <item name="android:background">@drawable/bee7_banner_btn</item>
+        <item name="android:paddingTop">@dimen/bee7_banner_notification_button_padding_vertical</item>
+        <item name="android:paddingBottom">@dimen/bee7_banner_notification_button_padding_vertical</item>
+        <item name="android:paddingLeft">@dimen/bee7_banner_notification_button_padding_horizontal</item>
+        <item name="android:paddingRight">@dimen/bee7_banner_notification_button_padding_horizontal</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="bee7_banner_notification_button_text">
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">@dimen/bee7_banner_notification_text_size</item>
+        <item name="android:textColor">@color/bee7_banner_notification_text_color_2</item>
+        <item name="android:paddingBottom">1.5dp</item>
+    </style>
+
+    <style name="bee7_banner_notification_anim_down_from_top" parent="android:Animation" mce_bogus="1">
+        <item name="android:windowEnterAnimation">@anim/bee7_banner_notification_slide_down_from_top</item>
+        <item name="android:windowExitAnimation">@anim/bee7_banner_notification_slide_up_to_top</item>
+    </style>
+
+    <style name="bee7_banner_notification_anim_up_from_bottom" parent="android:Animation" mce_bogus="1">
+        <item name="android:windowEnterAnimation">@anim/bee7_banner_notification_slide_up_from_bottom</item>
+        <item name="android:windowExitAnimation">@anim/bee7_banner_notification_slide_down_to_bottom</item>
+    </style>
+
+    <style name="Bee7_video_unit_dialog_spinner_theme" parent="@android:style/Theme.Dialog">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowFrame">@null</item>
+        <item name="android:windowFullscreen">true</item>
+    </style>
 </resources>

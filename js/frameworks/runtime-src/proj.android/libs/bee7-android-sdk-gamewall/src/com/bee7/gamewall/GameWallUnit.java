@@ -9,6 +9,8 @@ import com.bee7.sdk.publisher.GameWallConfiguration;
 import com.bee7.sdk.publisher.appoffer.AppOffer;
 import com.bee7.sdk.publisher.appoffer.AppOfferWithResult;
 
+import java.util.List;
+
 /**
  * Base abstract class for all gamewall units
  */
@@ -44,6 +46,8 @@ public abstract class GameWallUnit extends LinearLayout {
      * Updates game wall unit with appOffer
      */
     public abstract void update(AppOffer appOffer);
+
+    public abstract void update();
 
     /**
      * Updates game wall unit with location parameters

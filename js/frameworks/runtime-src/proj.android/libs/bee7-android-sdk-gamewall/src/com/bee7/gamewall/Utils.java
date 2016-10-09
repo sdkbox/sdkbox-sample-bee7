@@ -1,29 +1,25 @@
 package com.bee7.gamewall;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
-import android.view.View;
 import android.view.ViewGroup;
 
 import com.bee7.sdk.common.util.Logger;
 import com.bee7.sdk.common.util.SharedPreferencesHistoryHelper;
+import com.bee7.sdk.publisher.FrequencyCappingConfiguration;
 import com.bee7.sdk.publisher.GameWallConfiguration;
 import com.bee7.sdk.publisher.appoffer.AppOffer;
 import com.bee7.sdk.publisher.appoffer.AppOfferDefaultIconListener;
 
 import org.json.JSONObject;
 
-import java.io.File;
-import java.io.FileFilter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 public class Utils {
     private static final String TAG = Utils.class.getName();
@@ -48,6 +44,11 @@ public class Utils {
                 @Override
                 public double getUserRating() {
                     return (double)finalI/2d;
+                }
+
+                @Override
+                public boolean getTestMode() {
+                    return false;
                 }
 
                 @Override
@@ -87,7 +88,7 @@ public class Utils {
                                 return new URL("http://storage.googleapis.com/bee7/gamewall.default.icon/icon240.png"); // large
                         }
                     } catch (MalformedURLException e) {
-                        e.printStackTrace();
+                        Logger.error(TAG, "MalformedURLException getIconUrl: {0}", e.getMessage());
                     }
                     return null;
                 }
@@ -208,6 +209,41 @@ public class Utils {
                 public void updateLastPlayedTimestamp(Context context) {
                     SharedPreferencesHistoryHelper.updateLastPlayedTimestamp(context, getId());
                 }
+
+                @Override
+                public void setPriority(int priority) {
+
+                }
+
+                @Override
+                public double getScore() {
+                    return 0;
+                }
+
+                @Override
+                public double getAdjScore() {
+                    return 0;
+                }
+
+                @Override
+                public int getImpCnt() {
+                    return 0;
+                }
+
+                @Override
+                public double getImpProb() {
+                    return 1;
+                }
+
+                @Override
+                public FrequencyCappingConfiguration.OfferType getOfferType() {
+                    return null;
+                }
+
+                @Override
+                public double getFreqCapProbImpForIdx(int idx) {
+                    return 0;
+                }
             };
             testList.add(appOffer);
         }
@@ -279,9 +315,8 @@ public class Utils {
      */
     public static int getNumberOfItemsInGwUnitListHolder(Context context) {
         try {
-            Logger.debug("getNumberOfItemsInGwUnitListHolder","getNumberOfItemsInGwUnitListHolder 1");
             ViewGroup view = (ViewGroup) ViewGroup.inflate(context, R.layout.gamewall_unit_offer_list, null);
-            Logger.debug("getNumberOfItemsInGwUnitListHolder","getNumberOfItemsInGwUnitListHolder 2");
+            Logger.debug("getNumberOfItemsInGwUnitListHolder","getNumberOfItemsInGwUnitListHolder: " + view.getChildCount());
             return view.getChildCount();
         } catch (Exception ex) {
             throw new IllegalStateException("gamewall_unit_offer_list is malformed or not ViewGroup!");
@@ -294,5 +329,53 @@ public class Utils {
         } else {
             return false;
         }
+    }
+
+    public static String convertToSimpleNames(List<GameWallUnitOfferList.OfferTypePair> appOffers) {
+        if (appOffers != null && !appOffers.isEmpty()) {
+            String names = "";
+            for (GameWallUnitOfferList.OfferTypePair pair : appOffers) {
+                if (appOffers.indexOf(pair) > 0) {
+                    names = names + ", ";
+                }
+                names = names + pair.appOffer.getLocalizedName();
+            }
+
+            return names;
+        }
+
+        return "App offers list is empty";
+    }
+
+    public static String convertToSimpleNamesListAppOffer(List<AppOffer> appsNotInstalled) {
+        if (appsNotInstalled != null && !appsNotInstalled.isEmpty()) {
+            String names = "";
+            for (AppOffer appOffer : appsNotInstalled) {
+                if (appsNotInstalled.indexOf(appOffer) > 0) {
+                    names = names + ", ";
+                }
+                names = names + appOffer.getLocalizedName();
+            }
+
+            return names;
+        }
+
+        return "App offers list is empty";
+    }
+
+    public static String convertToSimpleNamesListUnitType(List<GameWallConfiguration.UnitType> unitTypes) {
+        if (unitTypes != null && !unitTypes.isEmpty()) {
+            String names = "";
+            for (GameWallConfiguration.UnitType unitType : unitTypes) {
+                if (unitTypes.indexOf(unitType) > 0) {
+                    names = names + ", ";
+                }
+                names = names + unitType;
+            }
+
+            return names;
+        }
+
+        return "Unit Type list is empty";
     }
 }

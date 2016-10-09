@@ -3,4 +3,6 @@
     <string name="bee7_gamewallIconSize">small</string>
     <string name="bee7_gamewallSourceIconDPI">xhdpi</string>
     <bool name="bee7_gamewallIsPhone">true</bool>
+
+    <integer name="bee7_notification_banner_anim_speed">550</integer>
 </resources>

@@ -2,6 +2,8 @@ package com.bee7.gamewall;
 
 import android.content.Context;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Pair;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +16,7 @@ import android.widget.TextView;
 import com.bee7.gamewall.interfaces.OnOfferClickListener;
 import com.bee7.gamewall.interfaces.OnVideoClickListener;
 import com.bee7.gamewall.views.Bee7ImageView;
+import com.bee7.sdk.common.util.Logger;
 import com.bee7.sdk.publisher.GameWallConfiguration;
 import com.bee7.sdk.publisher.appoffer.AppOffer;
 import com.bee7.sdk.publisher.appoffer.AppOfferWithResult;
@@ -28,6 +31,7 @@ import java.util.Map;
  * Offer List Holder Gamewall Unit
  */
 public class GameWallUnitOfferList extends GameWallUnit {
+    private static final String TAG = GameWallUnitOfferList.class.getName();
 
     public static class OfferTypePair {
         AppOffer appOffer;
@@ -48,8 +52,10 @@ public class GameWallUnitOfferList extends GameWallUnit {
                                  AppOffersModel.VideoButtonPosition videoButtonPosition,
                                  AppOffersModel.VideoPrequalType videoPrequaificationlType,
                                  int maxDailyRewardFreq, int _index, int _column, boolean firstInColumnGroup,
-                                 float exchangeRate, GameWallConfiguration.LayoutType layoutType) {
+                                 float exchangeRate, GameWallConfiguration.LayoutType layoutType,
+                                 boolean immersiveMode) {
         super(context, _index, 0,_column);
+        Logger.debug(TAG, "Instantiating GameWallUnitOfferList: row: " + index + ", column " + column + ", layoutType: " + layoutType + ", " + Utils.convertToSimpleNames(appOffers));
         this.appOffers = appOffers;
 
         inflate(getContext(), R.layout.gamewall_unit_offer_list, this);
@@ -83,7 +89,7 @@ public class GameWallUnitOfferList extends GameWallUnit {
         items = new ArrayList<GameWallUnitOfferListItem>();
 
         for (int i = 0; i < offersListView.getChildCount(); i++) {
-            GameWallUnitOfferListItem item = (GameWallUnitOfferListItem) offersListView.getChildAt(i);
+            final GameWallUnitOfferListItem item = (GameWallUnitOfferListItem) offersListView.getChildAt(i);
 
             if (appOffers.size() > i) {
                 item.update(appOffers.get(i).appOffer,
@@ -94,12 +100,19 @@ public class GameWallUnitOfferList extends GameWallUnit {
                         maxDailyRewardFreq,
                         appOffers.get(i).unitType,
                         index,
-                        offersListView.getChildCount(),
-                        exchangeRate);
+                        i,
+                        exchangeRate,
+                        immersiveMode);
 
                 item.getAppOfferWithResult(null).setLayoutType(layoutType);
             } else {
-                item.setVisibility(INVISIBLE);
+                Handler handler = new Handler(Looper.getMainLooper());
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        item.setVisibility(INVISIBLE);
+                    }
+                });
             }
 
             items.add(item);
@@ -119,7 +132,13 @@ public class GameWallUnitOfferList extends GameWallUnit {
     @Override
     public AppOfferWithResult getAppOfferWithResult(String appOfferId) {
         for (GameWallUnitOfferListItem item : items) {
-            if (item.getAppOffer(null) != null && item.getAppOffer(null).getId().equalsIgnoreCase(appOfferId)) {
+            if (item != null
+                    &&
+                    item.getAppOffer(null) != null
+                    &&
+                    item.getAppOffer(null).getId() != null
+                    &&
+                    item.getAppOffer(null).getId().equalsIgnoreCase(appOfferId)) {
                 return item.getAppOfferWithResult(null);
             }
         }
@@ -137,6 +156,19 @@ public class GameWallUnitOfferList extends GameWallUnit {
                             ((GameWallUnitOfferListItem)view).getAppOffer(null).getId().equalsIgnoreCase(appOffer.getId())) {
                         ((GameWallUnitOfferListItem)view).update(appOffer);
                     }
+                }
+            }
+        }
+    }
+
+    @Override
+    public void update() {
+        for (int i = 0; i < offersListView.getChildCount(); i++) {
+            View view = offersListView.getChildAt(i);
+
+            if (view instanceof GameWallUnitOfferListItem) {
+                if (!((GameWallUnitOfferListItem)view).isEmpty()) {
+                    ((GameWallUnitOfferListItem)view).update();
                 }
             }
         }

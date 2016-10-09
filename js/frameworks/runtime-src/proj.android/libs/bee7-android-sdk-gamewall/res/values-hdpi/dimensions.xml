@@ -1,9 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- gamewall_video_dialog -->
-    <dimen name="bee7_dialog_controls_icon_size">45dp</dimen>
-    <dimen name="bee7_dialog_controls_icon_padding">10dp</dimen>
-    <dimen name="bee7_dialog_vertical_margin">0dp</dimen>
-    <dimen name="bee7_dialog_vertical_item_spacing">8dp</dimen>
-    <dimen name="bee7_video_dialog_icon_size">42dp</dimen>
+    <!-- Video unit -->
+    <dimen name="bee7_video_unit_circle_icon_size">50dp</dimen>
+    <dimen name="bee7_video_unit_circle_icon_size_2">30dp</dimen>
+    <dimen name="bee7_video_unit_circle_icon_padding">10dp</dimen>
+    <dimen name="bee7_video_unit_circle_text_size">15dp</dimen>
+    <dimen name="bee7_video_unit_controls_icon_size">40dp</dimen>
+    <dimen name="bee7_video_unit_controls_icon_padding">7.5dp</dimen>
+    <dimen name="bee7_video_unit_controls_icon_margin_left">8.5dp</dimen>
+    <dimen name="bee7_video_unit_controls_icon_margin_bottom">4.5dp</dimen>
+    <dimen name="bee7_video_unit_controls_icon_margin_right">8.5dp</dimen>
+    <dimen name="bee7_video_unit_controls_icon_margin_top">4.5dp</dimen>
+
+    <dimen name="bee7_video_unit_trademark_horizontal_margin">20dp</dimen>
+    <dimen name="bee7_video_unit_trademark_vertical_margin">10dp</dimen>
+    <dimen name="bee7_video_unit_trademark_icon_width">23dp</dimen>
+    <dimen name="bee7_video_unit_trademark_icon_height">15dp</dimen>
+    <dimen name="bee7_video_unit_text_margin_bottom">3dp</dimen>
+    <dimen name="bee7_video_unit_text_horizontal_padding">50dp</dimen>
+
+    <dimen name="bee7_video_unit_rating_spacing">3dp</dimen>
+    <dimen name="bee7_video_unit_rating_icon_size">18dp</dimen>
+    <dimen name="bee7_video_unit_rating_margin_bottom">7dp</dimen>
+    <dimen name="bee7_video_unit_icon_size">100dp</dimen>
+    <dimen name="bee7_video_unit_text_size">21dp</dimen>
+    <dimen name="bee7_video_unit_button_horizontal_padding">28dp</dimen>
+    <dimen name="bee7_video_unit_button_text_padding">10dp</dimen>
+    <dimen name="bee7_video_unit_button_height">53dp</dimen>
+    <dimen name="bee7_video_unit_bubble_offer_name_max_width">250dp</dimen>
+    <dimen name="bee7_video_unit_button_text_size">22dp</dimen>
+    <dimen name="bee7_video_unit_button_download_icon_size">24dp</dimen>
+
+    <dimen name="bee7_video_unit_video_download_margin_left">16dp</dimen>
+    <dimen name="bee7_video_unit_video_download_margin_top">12dp</dimen>
+    <dimen name="bee7_video_unit_bubble_padding_top">33dp</dimen>
+    <dimen name="bee7_video_unit_bubble_padding_bottom">25dp</dimen>
+    <dimen name="bee7_video_unit_bubble_padding_horizontal">35dp</dimen>
 </resources>

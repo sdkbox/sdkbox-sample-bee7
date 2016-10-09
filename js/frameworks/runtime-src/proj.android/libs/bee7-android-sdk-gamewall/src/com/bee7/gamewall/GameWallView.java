@@ -1,26 +1,28 @@
 package com.bee7.gamewall;
 
 import android.animation.ObjectAnimator;
-import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Handler;
 import android.util.AttributeSet;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.view.animation.Animation;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 
 import com.bee7.gamewall.assets.AnimFactory;
+import com.bee7.gamewall.dialogs.DialogDebug;
 import com.bee7.gamewall.dialogs.DialogNoInternet;
 import com.bee7.gamewall.dialogs.DialogTutorial;
+import com.bee7.gamewall.interfaces.BannerNotificationGameWallInterface;
+import com.bee7.gamewall.interfaces.Bee7GameWallManager;
+import com.bee7.gamewall.interfaces.OnLayout;
 import com.bee7.gamewall.interfaces.OnOfferClickListener;
 import com.bee7.gamewall.interfaces.OnVideoClickListener;
 import com.bee7.gamewall.interfaces.OnVideoRewardGeneratedListener;
@@ -30,6 +32,8 @@ import com.bee7.gamewall.tasks.GenerateGameWallUnitAsyncTask;
 import com.bee7.gamewall.tasks.GenerateGameWallUnitListHolderAsyncTask;
 import com.bee7.gamewall.video.VideoComponent;
 import com.bee7.gamewall.video.VideoDialog;
+import com.bee7.sdk.adunit.exoplayer.ExoVideoPlayer;
+import com.bee7.gamewall.views.Bee7FrameLayout;
 import com.bee7.sdk.common.util.Logger;
 import com.bee7.sdk.common.util.SharedPreferencesHistoryHelper;
 import com.bee7.sdk.common.util.SharedPreferencesRewardsHelper;
@@ -55,6 +59,8 @@ public class GameWallView extends RelativeLayout implements OnVideoWithRewardPla
 
     private ScrollView gamesScrollView;
     private LinearLayout gamesColumn1;
+    private Bee7FrameLayout gameWallHeaderFrameLayout;
+    private Button debugButton;
 
     private int column1 = 1;
 
@@ -63,12 +69,17 @@ public class GameWallView extends RelativeLayout implements OnVideoWithRewardPla
     private GameWallConfiguration gameWallConfiguration;
     private List<String> impressionOffersAlreadySent;
     private OnVideoRewardGeneratedListener onVideoRewardGeneratedListener;
+    private BannerNotificationGameWallInterface bannerNotificationInterface;
+    private DialogDebug.DialogDebugInterface dialogDebugInterface;
+    private Bee7GameWallManager manager;
 
     private VideoDialog videoDialog;
+    private DialogTutorial dialogTutorial;
 
     private GameWallTaskWorker worker;
 
     public boolean disableClickEvents = false; //TODO temporary fix for BSDK-282: Dialogs displaying in mini games
+    private boolean immersiveMode = false;
 
     /**
      * With this flags we indicate if a offer list is first of a group in column
@@ -83,14 +94,21 @@ public class GameWallView extends RelativeLayout implements OnVideoWithRewardPla
         super(context, attrs);
     }
 
-    public void init(Publisher publisher, OnVideoRewardGeneratedListener onVideoRewardGeneratedListener) {
+    public void init(Publisher publisher, OnVideoRewardGeneratedListener onVideoRewardGeneratedListener,
+                     boolean immersiveMode, BannerNotificationGameWallInterface bannerNotificationInterface,
+                     Bee7GameWallManager manager,
+                     DialogDebug.DialogDebugInterface dialogDebugInterface) {
         this.publisher = publisher;
         this.gameWallConfiguration = publisher.getAppOffersModel().getGameWallConfiguration();
         this.onVideoRewardGeneratedListener = onVideoRewardGeneratedListener;
+        this.bannerNotificationInterface = bannerNotificationInterface;
+        this.immersiveMode = immersiveMode;
+        this.dialogDebugInterface = dialogDebugInterface;
+        this.manager = manager;
 
         impressionOffersAlreadySent = new ArrayList<String>();
 
-        this.worker = new GameWallTaskWorker("bee7gamewallworker");
+        this.worker = GameWallTaskWorker.getInstance();
     }
 
     @Override
@@ -100,6 +118,21 @@ public class GameWallView extends RelativeLayout implements OnVideoWithRewardPla
 
         gamesScrollView = (ScrollView) findViewById(R.id.gamewallScrollView);
         gamesColumn1 = (LinearLayout) findViewById(R.id.gamewallLinearLayout);
+        debugButton = (Button) findViewById(R.id.debugButton);
+
+        gameWallHeaderFrameLayout = (Bee7FrameLayout)findViewById(R.id.gamewall_header);
+        gameWallHeaderFrameLayout.setOnLayout(new OnLayout() {
+            @Override
+            public void onHeight(int height) {
+                Logger.debug(TAG, "GameWallHeaderFrameLayout onHeight {0}", height);
+                onHeaderHeightChanged(height);
+            }
+
+            @Override
+            public void onWidth(int width) {
+                Logger.debug(TAG, "GameWallHeaderFrameLayout onWidth {0}", width);
+            }
+        });
 
         gamesScrollView.post(new Runnable() {
             @Override
@@ -122,7 +155,33 @@ public class GameWallView extends RelativeLayout implements OnVideoWithRewardPla
                 }
 
                 if (gameWallConfiguration.isTutorialEnabled()) {
-                    new DialogTutorial(getContext()).show();
+                    dialogTutorial = new DialogTutorial(getContext(), immersiveMode);
+                    dialogTutorial.setOnShowListener(new DialogInterface.OnShowListener() {
+                        @Override
+                        public void onShow(DialogInterface dialog) {
+                            if (bannerNotificationInterface != null) {
+                                bannerNotificationInterface.toggleNotificationShowingOnGameWall(false);
+                            }
+                            disableClickEvents = true;
+                        }
+                    });
+                    dialogTutorial.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                        @Override
+                        public void onDismiss(DialogInterface dialog) {
+                            if (bannerNotificationInterface != null) {
+                                bannerNotificationInterface.toggleNotificationShowingOnGameWall(true);
+                            }
+                            disableClickEvents = false;
+                        }
+                    });
+                    if (dialogTutorial.isDialogAllowedToShow()) {
+                        dialogTutorial.show();
+                        disableClickEvents = true;
+                    } else {
+                        disableClickEvents = false;
+                    }
+                } else {
+                    disableClickEvents = false;
                 }
             }
         });
@@ -133,6 +192,19 @@ public class GameWallView extends RelativeLayout implements OnVideoWithRewardPla
                 calculateShownOffers();
             }
         });
+
+        if (com.bee7.sdk.common.util.Utils.isDevBackendEnabled(getContext())) {
+            debugButton.setVisibility(VISIBLE);
+            debugButton.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    new DialogDebug(getContext(), publisher, onVideoRewardGeneratedListener, manager,
+                            dialogDebugInterface).show();
+                }
+            });
+        } else {
+            debugButton.setVisibility(GONE);
+        }
     }
 
     private int offersPosition;
@@ -152,12 +224,16 @@ public class GameWallView extends RelativeLayout implements OnVideoWithRewardPla
             List<AppOffer> appsNotInstalled,
             List<AppOffer> appsInstalled,
             Map<GameWallConfiguration.LayoutType, List<GameWallConfiguration.UnitType>> layoutTypeListMap) {
+        Logger.debug(TAG, "Updating Game Wall view: appsNotInstalled: " + Utils.convertToSimpleNamesListAppOffer(appsNotInstalled) + ", appsInstalled: " + Utils.convertToSimpleNamesListAppOffer(appsInstalled));
         //TODO implement some sort of view recycling
-        if (gamesColumn1 != null && gamesColumn1.getChildCount() > 0) {
+
+        worker.removeAllCallbacks();
+        if (gamesColumn1 != null) {
             removeOfferViews();
         }
 
         int numberOfItemsInGwUnitListHolder = Utils.getNumberOfItemsInGwUnitListHolder(getContext());
+        Logger.debug(TAG, "Number of items in gw unit list holder: " + numberOfItemsInGwUnitListHolder);
 
         // this flags indicates if we shoud display shadow on top of list unit
         firstOfferListInColumn1Group = true;
@@ -186,6 +262,7 @@ public class GameWallView extends RelativeLayout implements OnVideoWithRewardPla
         //portrait
         if (Utils.isPortrate(getContext()) && layoutTypeListMap != null) {
             List<GameWallConfiguration.UnitType> unitTypes = layoutTypeListMap.get(GameWallConfiguration.LayoutType.PORTRAIT);
+            Logger.debug(TAG, "Loop trough all unitTypes: " + Utils.convertToSimpleNamesListUnitType(unitTypes) );
             if (unitTypes != null) {
                 for (GameWallConfiguration.UnitType offerType : unitTypes) {
                     insertGameWallUnit(offerType, appsNotInstalled, appsInstalled, column1, GameWallConfiguration.LayoutType.PORTRAIT, numberOfItemsInGwUnitListHolder);
@@ -220,6 +297,7 @@ public class GameWallView extends RelativeLayout implements OnVideoWithRewardPla
                                     GameWallConfiguration.LayoutType layoutType,
                                     int numberOfItemsInGwUnitListHolder)
     {
+        Logger.debug(TAG, "Inserting game wall unit: offerType " + offerType + ", column " + column+ ", layoutType " + layoutType);
 
         if (offerType == GameWallConfiguration.UnitType.OFFER_BANNER) {
             if (offersPosition < appsNotInstalled.size()) {
@@ -329,7 +407,7 @@ public class GameWallView extends RelativeLayout implements OnVideoWithRewardPla
      */
     private void addRemaningConnectedOffers(List<AppOffer> appsInstalled, List<AppOffer> appsNotInstalled,
                                             int numberOfItemsInGwUnitListHolder) {
-
+        Logger.debug(TAG, "Add Remaining Connected Offers");
         //if we don't get layout configuration
         if (Utils.isPortrate(getContext())) {
             //fill installed games for portrait
@@ -395,6 +473,8 @@ public class GameWallView extends RelativeLayout implements OnVideoWithRewardPla
 
             //finish filling remaining installed offers
             for (int i = connectedPosition ; i < appsInstalled.size() ; i++) {
+                Logger.debug(TAG, "Finish with adding Remaining Installed Offers");
+
                 List<GameWallUnitOfferList.OfferTypePair> appOffers = new ArrayList<GameWallUnitOfferList.OfferTypePair>();
                 int temp = i + numberOfItemsInGwUnitListHolder;
                 for (int k = i ; k < temp ; k++) {
@@ -417,10 +497,11 @@ public class GameWallView extends RelativeLayout implements OnVideoWithRewardPla
      * @param index
      * @param column
      */
-    private void createOfferList(List<GameWallUnitOfferList.OfferTypePair> appOffers,
+    private void createOfferList(final List<GameWallUnitOfferList.OfferTypePair> appOffers,
                                  GameWallConfiguration.UnitType offerType, int index, int column,
                                  boolean firstInColumnGroup, GameWallConfiguration.LayoutType layoutType)
     {
+        Logger.debug(TAG, "Creating Offer List offerType: " + offerType + ", row: " + index + ", column " + column + ", layoutType: " + layoutType + ", " + Utils.convertToSimpleNames(appOffers));
         final int offersCnt = appOffers.size();
 
         GenerateGameWallUnitListHolderAsyncTask generateGameWallUnitListHolderAsyncTask = new GenerateGameWallUnitListHolderAsyncTask(
@@ -430,7 +511,12 @@ public class GameWallView extends RelativeLayout implements OnVideoWithRewardPla
                     @Override
                     public void onOfferClick(AppOffer appOffer, AppOfferWithResult appOfferWithResult, boolean afterVideo, Publisher.AppOfferStartOrigin origin) {
                         if (GameWallView.this.isShown() && !disableClickEvents) {
-                            disableClickEvents = true;
+                            // for mini games disable all future clicks
+                            // clicks will be enabled again when show is called
+                            if (appOffer.isInnerApp()) {
+                                disableClickEvents = true;
+                            }
+
                             onPause();
                             GameWallImpl.startAppOffer(appOffer, appOfferWithResult, getContext(), publisher, origin);
                         }
@@ -441,7 +527,7 @@ public class GameWallView extends RelativeLayout implements OnVideoWithRewardPla
                     public void onVideoClick(AppOffer appOffer, AppOfferWithResult appOfferWithResult) {
                         if (GameWallView.this.isShown() && !disableClickEvents) {
                             if (!com.bee7.sdk.common.util.Utils.isOnline(getContext())) {
-                                new DialogNoInternet(getContext()).show();
+                                new DialogNoInternet(getContext(), immersiveMode).show();
                                 return;
                             }
 
@@ -462,11 +548,13 @@ public class GameWallView extends RelativeLayout implements OnVideoWithRewardPla
                 column,
                 firstInColumnGroup,
                 publisher.getExchangeRate(),
-                layoutType);
+                layoutType,
+                immersiveMode);
 
         generateGameWallUnitListHolderAsyncTask.setOnGameWallUnitListHolderGeneratedListener(new GenerateGameWallUnitListHolderAsyncTask.OnGameWallUnitListHolderGeneratedListener() {
             @Override
             public void OnGameWallUnitListHolderGenerated(View gameWallUnitListHolder, LinearLayout.LayoutParams layoutParams, int layoutIndex, int column) {
+                Logger.debug(TAG, "Adding View To Column: layoutParams: " + layoutParams.width + "," + layoutParams.height + ", layoutIndex " + layoutIndex + ", column: " + column + Utils.convertToSimpleNames(appOffers));
                 addViewToColumn(gameWallUnitListHolder, layoutParams, layoutIndex, column);
 
                 appsCount += offersCnt;
@@ -479,6 +567,7 @@ public class GameWallView extends RelativeLayout implements OnVideoWithRewardPla
         });
 
         if (this.worker != null) {
+            Logger.debug(TAG, "this.worker.postGenerateUnitList(generateGameWallUnitListHolderAsyncTask)");
             this.worker.postGenerateUnitList(generateGameWallUnitListHolderAsyncTask);
         }
     }
@@ -490,9 +579,10 @@ public class GameWallView extends RelativeLayout implements OnVideoWithRewardPla
      * @param index
      * @param column
      */
-    private void createOfferBanner(AppOffer appOffer, final GameWallConfiguration.UnitType unitType,
-                                   int index, int column, final GameWallConfiguration.LayoutType layoutType)
+    private void createOfferBanner(final AppOffer appOffer, final GameWallConfiguration.UnitType unitType,
+                                   final int index, int column, final GameWallConfiguration.LayoutType layoutType)
     {
+        Logger.debug(TAG, "Creating Offer List offerType: " + unitType + ", row: " + index + ", column " + column + ", layoutType: " + layoutType + ", " + appOffer.getLocalizedName());
         GenerateGameWallUnitAsyncTask generateGameWallUnitAsyncTask = new GenerateGameWallUnitAsyncTask(
                 getContext(),
                 appOffer,
@@ -500,7 +590,12 @@ public class GameWallView extends RelativeLayout implements OnVideoWithRewardPla
                     @Override
                     public void onOfferClick(AppOffer appOffer, AppOfferWithResult appOfferWithResult, boolean afterVideo, Publisher.AppOfferStartOrigin origin) {
                         if (GameWallView.this.isShown() && !disableClickEvents) {
-                            disableClickEvents = true;
+                            // for mini games disable all future clicks
+                            // clicks will be enabled again when show is called
+                            if (appOffer.isInnerApp()) {
+                                disableClickEvents = true;
+                            }
+                            
                             onPause();
                             GameWallImpl.startAppOffer(appOffer, appOfferWithResult, getContext(), publisher, origin);
                         }
@@ -546,12 +641,13 @@ public class GameWallView extends RelativeLayout implements OnVideoWithRewardPla
                     gameWallUnitOffer.getAppOfferWithResult(null).setLayoutType(layoutType);
                 }
 
+                Logger.debug(TAG, "Adding View To Column: layoutParams: " + layoutParams.width + "," + layoutParams.height + ", layoutIndex " + layoutIndex + ", column: " + column + ", " + appOffer.getLocalizedName());
                 addViewToColumn(gameWallUnitOffer, layoutParams, layoutIndex, column);
 
                 appsCount++;
 
                 //-1 due to the zero based offers/connected positions
-                if (appsCount >= (offersPosition + connectedPosition -1)) {
+                if (appsCount >= (offersPosition + connectedPosition - 1)) {
                     calculateShownOffers();
                 }
             }
@@ -572,28 +668,37 @@ public class GameWallView extends RelativeLayout implements OnVideoWithRewardPla
      * @param column
      */
     private void addViewToColumn(View view, LinearLayout.LayoutParams layoutParams, int layoutIndex, int column) {
+        Logger.debug(TAG, "addViewToColumn layoutIndex: " + layoutIndex  + ", column: " + column);
         if (column == 1 && gamesColumn1 != null) {
             if (gamesColumn1.getChildCount() < layoutIndex) {
                 layoutIndex = gamesColumn1.getChildCount();
+                Logger.debug(TAG, "addViewToColumn layoutIndex is bigger than gamesColumn1 child count, new index " + layoutIndex);
             }
+            //disabled animation due to the problems on some devices
+            /*
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR1) {
                 Animation animShow = AnimFactory.createAlphaShow(view, true);
                 if (animShow != null) {
+                    Logger.debug(TAG, "addViewToColumn animation will be used");
 
                     view.setAlpha(0f);
+                    Logger.debug(TAG, "Adding view to gamesColumn1: layoutIndex " + layoutIndex + ", layoutParams " + layoutParams.width + "," + layoutParams.height);
                     gamesColumn1.addView(view, layoutIndex, layoutParams);
 
                     animShow.setDuration(AnimFactory.ANIMATION_DURATION_SHORT);
                     final long animStart = System.currentTimeMillis();
                     animShow.setAnimationListener(new Animation.AnimationListener() {
                         @Override
-                        public void onAnimationStart(Animation animation) { }
+                        public void onAnimationStart(Animation animation) {
+                            Logger.debug(TAG, "Adding view to gamesColumn1 start animation");
+                        }
 
                         @Override
                         public void onAnimationEnd(Animation animation) {
                             if ((System.currentTimeMillis() - animStart) > (AnimFactory.ANIMATION_DURATION_SHORT + 150)) {
                                 AnimFactory.disableAnimations(getContext());
                             }
+                            Logger.debug(TAG, "Adding view to gamesColumn1 end animation");
                         }
 
                         @Override
@@ -601,11 +706,16 @@ public class GameWallView extends RelativeLayout implements OnVideoWithRewardPla
                     });
                     view.startAnimation(animShow);
                 } else {
+                    Logger.debug(TAG, "Adding view to gamesColumn1: layoutIndex " + layoutIndex + ", layoutParams " + layoutParams.width + "," + layoutParams.height);
                     gamesColumn1.addView(view, layoutIndex, layoutParams);
                 }
             } else {
+            */
+                Logger.debug(TAG, "Adding view to gamesColumn1: layoutIndex " + layoutIndex + ", layoutParams " + layoutParams.width + "," + layoutParams.height);
                 gamesColumn1.addView(view, layoutIndex, layoutParams);
-            }
+            //}
+        } else {
+            Logger.debug(TAG, "column != 1 or gamesColumn1 == null, no view will be added");
         }
     }
 
@@ -616,7 +726,7 @@ public class GameWallView extends RelativeLayout implements OnVideoWithRewardPla
     private void showVideoView(AppOffer appOffer, AppOfferWithResult appOfferWithResult) {
         //check if we have internet connection
         if(!com.bee7.sdk.common.util.Utils.isOnline(getContext())) {
-            new DialogNoInternet(getContext()).show();
+            new DialogNoInternet(getContext(), immersiveMode).show();
             return;
         }
 
@@ -667,6 +777,9 @@ public class GameWallView extends RelativeLayout implements OnVideoWithRewardPla
         GameWallUnitOfferBanner gwUnitOfferBanner = findViewWithVideoView();
         if (column == column1) {
             scrollPosition = gamesColumn1.getChildAt(index).getTop() - centerOffset;
+            if (gameWallHeaderFrameLayout != null) {
+                scrollPosition = scrollPosition - gameWallHeaderFrameLayout.getHeight();
+            }
 
             //If there is any video view shown above view that we are scrolling to, we need to take this into our scroll position
             if (gwUnitOfferBanner != null && gwUnitOfferBanner.getColumn() == column1 && gamesColumn1.indexOfChild(gwUnitOfferBanner) < index ) {
@@ -808,39 +921,46 @@ public class GameWallView extends RelativeLayout implements OnVideoWithRewardPla
      * @param videoPrequalType
      */
     private void showVideoDialog(AppOffer appOffer, AppOfferWithResult appOfferWithResult, long currentProgress, final boolean videoMuted, AppOffersModel.VideoPrequalType videoPrequalType) {
-        if (videoDialog != null) {
+        if (videoDialog != null && videoDialog.isShowing()) {
             return;
         }
 
-        videoDialog = new VideoDialog(getContext(), appOffer, appOfferWithResult, currentProgress, videoMuted, videoPrequalType, publisher, onVideoRewardGeneratedListener, new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ViewGroup rootView = ((ViewGroup) ((Activity) getContext()).findViewById(android.R.id.content));
-                if (rootView != null && videoDialog != null) {
-                    rootView.removeView(videoDialog);
-                    videoDialog = null;
-                }
-            }
-        }, new OnOfferClickListener() {
+        videoDialog = new VideoDialog(getContext(), immersiveMode);
+
+        videoDialog.setup(appOffer, appOfferWithResult, currentProgress, videoMuted, videoPrequalType, publisher, onVideoRewardGeneratedListener, new OnOfferClickListener() {
             @Override
             public void onOfferClick(AppOffer appOffer, AppOfferWithResult appOfferWithResult, boolean afterVideo, Publisher.AppOfferStartOrigin origin) {
                 onPause();
                 GameWallImpl.startAppOffer(appOffer, appOfferWithResult, getContext(), publisher, origin);
-                if (videoDialog != null && videoDialog.isShown()) {
-                    videoDialog.hide(true);
+                if (videoDialog != null && videoDialog.isShowing()) {
+                    videoDialog.dismiss();
+                }
+            }
+        }, new ExoVideoPlayer.GameWallCallback() {
+            @Override
+            public void refreshGameWall() {
+                updateGameWallUnits();
+            }
+        });
+
+        videoDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface dialog) {
+                if (bannerNotificationInterface != null) {
+                    bannerNotificationInterface.toggleNotificationShowingOnGameWall(false);
+                }
+            }
+        });
+        videoDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                if (bannerNotificationInterface != null) {
+                    bannerNotificationInterface.toggleNotificationShowingOnGameWall(true);
                 }
             }
         });
 
-        videoDialog.setOnTouchListener(new OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                return true;
-            }
-        });
-
-        ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        ((Activity)getContext()).getWindow().addContentView(videoDialog, lp);
+        videoDialog.show();
     }
 
     /**
@@ -858,15 +978,18 @@ public class GameWallView extends RelativeLayout implements OnVideoWithRewardPla
      * Called from activity onPause
      */
     public void onPause() {
-        disableClickEvents = false;
 
         GameWallUnitOfferBanner offerBanner = findViewWithVideoView();
         if (offerBanner != null && offerBanner.getVideoComponent() != null) {
             offerBanner.removeVideoView(null, false, null, false);
         }
 
-        if (videoDialog != null && videoDialog.isShown()) {
+        if (videoDialog != null && videoDialog.isShowing()) {
             videoDialog.hide(true);
+        }
+
+        if (dialogTutorial != null && dialogTutorial.isShowing()) {
+            dialogTutorial.dismiss();
         }
     }
 
@@ -882,13 +1005,6 @@ public class GameWallView extends RelativeLayout implements OnVideoWithRewardPla
                 !offerBanner.isCloseNoticeShowing() &&
                 !offerBanner.icCtaShowing()) {
             offerBanner.getVideoComponent().onResume();
-        }
-
-        if (videoDialog != null &&
-                videoDialog.isShown() &&
-                !videoDialog.isCloseNoticeShown() &&
-                !videoDialog.isCtaShowing()) {
-            videoDialog.onResume();
         }
     }
 
@@ -932,6 +1048,13 @@ public class GameWallView extends RelativeLayout implements OnVideoWithRewardPla
                 Logger.debug(TAG, "updateGameWallUnit " + appOffer.getLocalizedName() + " " + appOffer.getId());
                 gameWallUnit.update(appOffer);
             }
+        }
+    }
+
+    public void updateGameWallUnits() {
+        for (int i = 0 ; i < gamesColumn1.getChildCount() ; i++) {
+            GameWallUnit gameWallUnit = (GameWallUnit)gamesColumn1.getChildAt(i);
+            gameWallUnit.update();
         }
     }
 
@@ -1006,6 +1129,7 @@ public class GameWallView extends RelativeLayout implements OnVideoWithRewardPla
      * Removes all views from columns.
      */
     public void removeOfferViews() {
+        Logger.debug(TAG, "Clearing gamesColumn1");
         gamesColumn1.removeAllViews();
     }
 
@@ -1015,7 +1139,25 @@ public class GameWallView extends RelativeLayout implements OnVideoWithRewardPla
         gwUnitOfferBanner.showCloseNotice();
     }
 
-    public VideoDialog getVideoViewDialog() {
+    public VideoDialog getVideoDialog() {
         return videoDialog;
+    }
+
+    public void setHeader(View header) {
+        gameWallHeaderFrameLayout.removeAllViews();
+        gameWallHeaderFrameLayout.addView(header);
+    }
+
+    public void onHeaderHeightChanged(int viewHeight) {
+        if (gamesColumn1 != null) {
+            gamesColumn1.setPadding(0, viewHeight, 0, 0);
+        }
+    }
+
+    public View getAnchorView() {
+        if (videoDialog != null && videoDialog.isShowing()) {
+            return videoDialog.getRootView();
+        }
+        return this;
     }
 }

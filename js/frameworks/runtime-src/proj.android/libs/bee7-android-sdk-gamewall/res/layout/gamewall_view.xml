@@ -6,14 +6,10 @@
     android:layout_height="match_parent"
     style="@style/bee7_gamewallStyle">
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
         android:layout_alignParentTop="true">
-
-        <include
-            layout="@layout/gamewall_header" />
 
         <ScrollView
             style="@style/bee7_gamewallScrollView"
@@ -34,6 +30,17 @@
             </LinearLayout>
 
         </ScrollView>
-    </LinearLayout>
+
+        <include
+            layout="@layout/gamewall_header_holder" />
+
+        <Button
+            android:id="@+id/debugButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Debug"
+            android:visibility="gone"/>
+
+    </RelativeLayout>
 
 </com.bee7.gamewall.GameWallView>

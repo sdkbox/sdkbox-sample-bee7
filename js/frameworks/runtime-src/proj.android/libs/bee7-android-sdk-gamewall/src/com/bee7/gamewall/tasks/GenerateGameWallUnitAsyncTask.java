@@ -9,6 +9,7 @@ import com.bee7.gamewall.GameWallUnitOfferBanner;
 import com.bee7.gamewall.GameWallView;
 import com.bee7.gamewall.interfaces.OnOfferClickListener;
 import com.bee7.gamewall.interfaces.OnVideoClickListener;
+import com.bee7.sdk.common.util.Logger;
 import com.bee7.sdk.publisher.GameWallConfiguration;
 import com.bee7.sdk.publisher.appoffer.AppOffer;
 import com.bee7.sdk.publisher.appoffer.AppOffersModel;
@@ -18,7 +19,11 @@ import com.bee7.sdk.publisher.appoffer.AppOffersModel;
  */
 public class GenerateGameWallUnitAsyncTask {
 
-    private static final String TAG = GameWallView.class.getName();
+    private static final String TAG = GenerateGameWallUnitAsyncTask.class.getName();
+
+    public void removeCallback() {
+        onGameWallUnitGeneratedListener = null;
+    }
 
     public interface OnGameWallUnitGeneratedListener {
         void OnGameWallUnitGenerated(GameWallUnitOffer gameWallUnitOffer, LinearLayout.LayoutParams layoutParams, int layoutIndex, int column);
@@ -60,6 +65,7 @@ public class GenerateGameWallUnitAsyncTask {
     }
 
     protected GameWallUnitOffer doInBackground() {
+        Logger.debug(TAG, "GameWallUnitOfferBanner doInBackground");
         GameWallUnitOfferBanner gwUnitOfferBanner = new GameWallUnitOfferBanner(
                 context,
                 appOffer,
