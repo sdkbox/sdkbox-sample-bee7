@@ -29,4 +29,15 @@
     <string name="bee7_dialog_reward_part4">заработай</string>
     <string name="bee7_dialog_reward_part5">в</string>
     <string name="bee7_dialog_reward_part6"></string>
+
+    <string name="bee7_dialog_locked_minigame_text">Достигни %1$d уровня, чтобы открыть эту игру.</string>
+
+    <!--banner notification-->
+    <string name="bee7_banner_notification_play">Играй и</string>
+    <string name="bee7_banner_notification_earn">Получай</string>
+    <string name="bee7_banner_notification_watch">Смотри и</string>
+    <string name="bee7_banner_notification_more">Еще</string>
+
+    <!--video unit-->
+    <string name="bee7_video_unit_download">Скачать</string>
 </resources>

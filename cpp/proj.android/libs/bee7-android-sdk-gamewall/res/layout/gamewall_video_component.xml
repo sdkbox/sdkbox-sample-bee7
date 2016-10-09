@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <merge xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <com.bee7.gamewall.views.Bee7ImageView
+    <ImageView
         android:id="@+id/gamewallGamesListCTAImage"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -58,7 +58,7 @@
             android:layout_height="@dimen/bee7_inwall_circle_icon_size"
             android:layout_margin="@dimen/bee7_inwall_circle_icon_padding"
             android:textSize="@dimen/bee7_inwall_circle_text_size"
-            android:textColor="#ffffff"
+            android:textColor="@color/white"
             android:background="@drawable/bee7_icon_counter_circle"
             android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
@@ -74,6 +74,16 @@
         android:background="#cc000000"
         android:visibility="gone">
 
+        <com.bee7.gamewall.views.Bee7ImageView
+            android:id="@+id/ingamewall_close_notice_close"
+            android:layout_width="@dimen/bee7_inwall_controls_icon_size"
+            android:layout_height="@dimen/bee7_inwall_controls_icon_size"
+            android:padding="@dimen/bee7_inwall_controls_icon_padding"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:visibility="gone"
+            style="@style/bee7_gamewall_video_control_close" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -88,7 +98,7 @@
                 android:layout_weight="0.50"
                 android:textSize="@dimen/bee7_inwall_close_notice_text_size"
                 android:lineSpacingExtra="2dp"
-                android:textColor="#ffffff"
+                android:textColor="@color/white"
                 android:gravity="center_horizontal|bottom"
                 android:layout_marginBottom="@dimen/bee7_inwall_close_notice_item_padding"
                 android:layout_marginLeft="35dp"

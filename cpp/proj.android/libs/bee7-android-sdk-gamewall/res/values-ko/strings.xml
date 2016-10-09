@@ -29,4 +29,15 @@
     <string name="bee7_dialog_reward_part4"></string>
     <string name="bee7_dialog_reward_part5">에서</string>
     <string name="bee7_dialog_reward_part6">적립</string>
+
+    <string name="bee7_dialog_locked_minigame_text">이 게임의 잠금을\n해제하려면 레벨\n%1$d에 도달하세요.</string>
+
+    <!--banner notification-->
+    <string name="bee7_banner_notification_play">플레이하고</string>
+    <string name="bee7_banner_notification_earn">적립</string>
+    <string name="bee7_banner_notification_watch">시청하고</string>
+    <string name="bee7_banner_notification_more">더 적립하기</string>
+
+    <!--video unit-->
+    <string name="bee7_video_unit_download">다운로드</string>
 </resources>

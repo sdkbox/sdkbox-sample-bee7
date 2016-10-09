@@ -4,12 +4,14 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 
 import com.bee7.gamewall.dialogs.DialogReward;
 import com.bee7.sdk.common.util.Logger;
+import com.bee7.sdk.publisher.DefaultPublisher;
 
 /**
  * Reward notification wrapper, controls bubble visibility
@@ -35,33 +37,52 @@ public class NotifyReward {
     private Drawable mVCIcon;
     private Drawable mPublisherIcon;
     private boolean mVideoReward;
+    public String pendingId;
     
     private DisplayedChangeListener mDisplayedListener;
 
-    public NotifyReward(Activity activity, DisplayedChangeListener displayedListener) {
-        this.activity = activity;
+    private long now;
+    private Handler handler;
+
+    public NotifyReward(DisplayedChangeListener displayedListener) {
         this.mDisplayedListener = displayedListener;
     }
 
-    public NotifyReward addMsg(String text, Bitmap appIcon, Drawable vcIcon, Drawable publisherIcon, boolean videoReward) {
+    public NotifyReward addMsg(String text, Bitmap appIcon, Drawable vcIcon, Drawable publisherIcon, boolean videoReward, String pendingId) {
+        Logger.debug(TAG, "addMsg isVideoReward " + videoReward);
         mText = text;
         mAppIcon = appIcon;
         mVCIcon = vcIcon;
         mPublisherIcon = publisherIcon;
         mVideoReward = videoReward;
+        this.pendingId = pendingId;
 
         return this;
     }
 
-    public synchronized boolean exec() {
+    public synchronized boolean exec(DefaultPublisher publisher) {
         dontRun = false;
-        final long now = System.currentTimeMillis();
+        now = System.currentTimeMillis();
         executeTime = now;
-        dialogReward = new DialogReward(activity, mVideoReward);
+        handler = new Handler();
+
+        if (publisher != null) {
+            publisher.removePendingReward(pendingId);
+        }
+
+        dialogReward = new DialogReward(activity, mVideoReward, messageQueue.getImmersiveMode());
+        dialogReward.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                handler.removeCallbacks(runnable);
+                runnable.run();
+            }
+        });
 
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                Logger.debug(TAG, "exec runOnUiThread run");
                 msgLock.lock();
                 try {
                     if (dontRun) {
@@ -74,15 +95,17 @@ public class NotifyReward {
             }
         });
 
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                removeBubble(true, now);
-            }
-        }, 10 * 1000);
+        handler.postDelayed(runnable, 10 * 1000);
 
         return true;
     }
+
+    private Runnable runnable = new Runnable() {
+        @Override
+        public void run() {
+            removeBubble(true, now);
+        }
+    };
 
     public synchronized void removeBubble(boolean removeMsg, long tm) {
         if (tm != executeTime && tm != 0) {

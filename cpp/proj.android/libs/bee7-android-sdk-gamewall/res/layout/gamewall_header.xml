@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.bee7.gamewall.GameWallHeader xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/gamewall_header"
     android:layout_width="match_parent"
     android:layout_height="@dimen/bee7_gamewall_header_height"
@@ -25,16 +26,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
-            android:text="@string/bee7_header_title" />
-
-        <ImageView
-            android:id="@+id/gamewallHeaderIconReward"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginLeft="@dimen/bee7_gamewall_header_icon_margin"
-            android:adjustViewBounds="true"
-            android:src="@drawable/bee7_icon_reward" />
+            android:text="@string/bee7_header_title"
+            android:drawableRight="@drawable/bee7_icon_reward"/>
     </LinearLayout>
 
     <com.bee7.gamewall.views.Bee7ImageView
@@ -49,4 +42,4 @@
         android:layout_marginRight="@dimen/bee7_gamewall_header_text_horizontal_margin"
         android:scaleType="fitXY" />
 
-</com.bee7.gamewall.GameWallHeader>
+</RelativeLayout>

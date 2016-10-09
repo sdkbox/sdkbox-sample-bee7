@@ -19,7 +19,7 @@
         android:paddingRight="@dimen/bee7_dialog_padding"
         android:paddingEnd="@dimen/bee7_dialog_padding"
         android:paddingTop="@dimen/bee7_dialog_padding_top"
-        android:paddingBottom="@dimen/bee7_dialog_padding"
+        android:paddingBottom="@dimen/bee7_dialog_padding_top"
         android:orientation="vertical"
         android:gravity="center">
 
@@ -111,6 +111,7 @@
             android:textStyle="bold"
             android:gravity="center"
             android:layout_marginTop="@dimen/bee7_dialog_item_margin"
+            android:layout_marginBottom="@dimen/bee7_dialog_item_margin"
             android:includeFontPadding="false"/>
 
     </LinearLayout>

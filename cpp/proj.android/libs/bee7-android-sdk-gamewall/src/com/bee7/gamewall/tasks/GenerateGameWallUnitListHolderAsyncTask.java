@@ -9,6 +9,7 @@ import com.bee7.gamewall.GameWallUnitOfferList;
 import com.bee7.gamewall.GameWallView;
 import com.bee7.gamewall.interfaces.OnOfferClickListener;
 import com.bee7.gamewall.interfaces.OnVideoClickListener;
+import com.bee7.sdk.common.util.Logger;
 import com.bee7.sdk.publisher.GameWallConfiguration;
 import com.bee7.sdk.publisher.appoffer.AppOffersModel;
 
@@ -19,7 +20,11 @@ import java.util.List;
  */
 public class GenerateGameWallUnitListHolderAsyncTask {
 
-    private static final String TAG = GameWallView.class.getName();
+    private static final String TAG = GenerateGameWallUnitListHolderAsyncTask.class.getName();
+
+    public void removeCallback() {
+        onGameWallUnitListHolderGeneratedListener = null;
+    }
 
     public interface OnGameWallUnitListHolderGeneratedListener {
         void OnGameWallUnitListHolderGenerated(View gameWallUnitListHolder, LinearLayout.LayoutParams layoutParams, int layoutIndex, int column);
@@ -40,12 +45,13 @@ public class GenerateGameWallUnitListHolderAsyncTask {
     private boolean firstInColumnGroup;
     private float exchangeRate;
     private GameWallConfiguration.LayoutType layoutType;
+    private boolean immersiveMode = false;
 
     public GenerateGameWallUnitListHolderAsyncTask(Context context, List<GameWallUnitOfferList.OfferTypePair> appOffers, OnOfferClickListener onOfferClickListener,
                                                    OnVideoClickListener onVideoClickListener, AppOffersModel.VideoButtonPosition videoButtonPosition,
                                                    AppOffersModel.VideoPrequalType videoPrequaificationlType, int maxDailyRewardFreq,
                                                    GameWallConfiguration.UnitType unitType, int index, int column, boolean firstInColumnGroup,
-                                                   float exchangeRate, GameWallConfiguration.LayoutType layoutType)
+                                                   float exchangeRate, GameWallConfiguration.LayoutType layoutType, boolean immersiveMode)
     {
         this.context = context;
         this.appOffers = appOffers;
@@ -60,6 +66,7 @@ public class GenerateGameWallUnitListHolderAsyncTask {
         this.firstInColumnGroup = firstInColumnGroup;
         this.exchangeRate = exchangeRate;
         this.layoutType = layoutType;
+        this.immersiveMode = immersiveMode;
     }
 
     public void setOnGameWallUnitListHolderGeneratedListener(OnGameWallUnitListHolderGeneratedListener onGameWallUnitListHolderGeneratedListener) {
@@ -67,6 +74,7 @@ public class GenerateGameWallUnitListHolderAsyncTask {
     }
 
     protected View doInBackground() {
+        Logger.debug(TAG, "GameWallUnitOfferList doInBackground");
         GameWallUnitOfferList gwUnitOfferListHolder = new GameWallUnitOfferList(
                 context,
                 appOffers,
@@ -79,17 +87,22 @@ public class GenerateGameWallUnitListHolderAsyncTask {
                 column,
                 firstInColumnGroup,
                 exchangeRate,
-                layoutType);
+                layoutType,
+                immersiveMode);
         return gwUnitOfferListHolder;
     }
 
     protected void onPostExecute(View view) {
+        Logger.debug(TAG, "onPostExecute()");
         if (onGameWallUnitListHolderGeneratedListener != null && view != null) {
             LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT);
 
+            Logger.debug(TAG, "onGameWallUnitListHolderGeneratedListener.OnGameWallUnitListHolderGenerated(view, layoutParams, index: " + index + ", column: " + column + ")");
             onGameWallUnitListHolderGeneratedListener.OnGameWallUnitListHolderGenerated(view, layoutParams, index, column);
+        } else {
+            Logger.debug(TAG, "onGameWallUnitListHolderGeneratedListener == null or view == null");
         }
     }
 }

@@ -28,4 +28,15 @@
     <string name="bee7_dialog_reward_part4">gana</string>
     <string name="bee7_dialog_reward_part5">en</string>
     <string name="bee7_dialog_reward_part6"></string>
+
+    <string name="bee7_dialog_locked_minigame_text">Alcanza el nivel %1$d para desbloquear este juego. </string>
+
+    <!--banner notification-->
+    <string name="bee7_banner_notification_play">Juega y</string>
+    <string name="bee7_banner_notification_earn">Gana</string>
+    <string name="bee7_banner_notification_watch">Mira y</string>
+    <string name="bee7_banner_notification_more">Más</string>
+
+    <!--video unit-->
+    <string name="bee7_video_unit_download">Descargar</string>
 </resources>

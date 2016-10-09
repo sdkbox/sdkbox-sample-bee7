@@ -1,7 +1,7 @@
 package com.bee7.gamewall;
 
 import android.app.Activity;
-import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -15,6 +15,7 @@ import android.os.SystemClock;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
@@ -22,10 +23,19 @@ import android.view.animation.DecelerateInterpolator;
 import com.bee7.gamewall.assets.AnimFactory;
 import com.bee7.gamewall.assets.AssetsManager;
 import com.bee7.gamewall.assets.UnscaledBitmapLoader;
+import com.bee7.gamewall.dialogs.DialogDebug;
 import com.bee7.gamewall.dialogs.DialogNoInternet;
 import com.bee7.gamewall.dialogs.DialogRedirecting;
+import com.bee7.gamewall.enums.BannerNotificationPosition;
+import com.bee7.gamewall.interfaces.BannerNotificationGameWallInterface;
+import com.bee7.gamewall.interfaces.Bee7BannerNotificationInterface;
 import com.bee7.gamewall.interfaces.Bee7GameWallManager;
+import com.bee7.gamewall.interfaces.Bee7GameWallManagerV2;
+import com.bee7.gamewall.interfaces.Bee7GameWallViewsInterface;
+import com.bee7.gamewall.interfaces.GamewallHeaderCallbackInterface;
 import com.bee7.gamewall.interfaces.OnVideoRewardGeneratedListener;
+import com.bee7.sdk.common.Bee7;
+import com.bee7.sdk.common.ExternalDebugToolsDialog;
 import com.bee7.sdk.common.OnEnableChangeListener;
 import com.bee7.sdk.common.OnReportingIdChangeListener;
 import com.bee7.sdk.common.Reward;
@@ -34,7 +44,9 @@ import com.bee7.sdk.common.task.TaskFeedback;
 import com.bee7.sdk.common.util.*;
 import com.bee7.sdk.publisher.DefaultPublisher;
 import com.bee7.sdk.publisher.GameWallConfiguration;
+import com.bee7.sdk.publisher.OnOfferListener;
 import com.bee7.sdk.publisher.Publisher;
+import com.bee7.sdk.publisher.PublisherConfiguration;
 import com.bee7.sdk.publisher.appoffer.AppOffer;
 import com.bee7.sdk.publisher.appoffer.AppOfferWithResult;
 import com.bee7.sdk.publisher.appoffer.AppOffersModel;
@@ -46,12 +58,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class GameWallImpl  implements AppOffersModelListener, NotifyReward.DisplayedChangeListener,
-        OnVideoRewardGeneratedListener {
+public class GameWallImpl implements AppOffersModelListener, NotifyReward.DisplayedChangeListener,
+        OnVideoRewardGeneratedListener, Bee7BannerNotificationInterface, BannerNotificationGameWallInterface{
     static final String TAG = GameWallImpl.class.getSimpleName();
 
     private static String BEE7_API_KEY;
     private static String BEE7_VENDOR_ID;
+    private static String BEE7_GAMEWALL_VERSION = "2.11.3";
 
     private static boolean minigameStarted = false;
 
@@ -60,8 +73,10 @@ public class GameWallImpl  implements AppOffersModelListener, NotifyReward.Displ
 
     protected DefaultPublisher mPublisher;
     protected RewardQueue mRewardQueue;
+    protected BannerNotificationQueue notificationQueue;
     private GameWallView mGameWallView = null;
     private static Activity mActivity;
+    private static Dialog mDialog;
     private Uri mClaimData;
 
     private boolean mShown;
@@ -70,24 +85,33 @@ public class GameWallImpl  implements AppOffersModelListener, NotifyReward.Displ
     private SharedPreferencesRewardsHelper sharedPreferencesRewardsHelper;
     private List<AppOffer> innerApps;
     private Object innerAppsLock = new Object();
+    private static OnOfferListener onOfferListener;
 
     boolean animate = false; //TODO make configurable
+    private static boolean immersiveMode = false;
+
+    private Bee7GameWallViewsInterface bee7GameWallViewsInterface;
 
     public GameWallImpl(Context ctx, final Bee7GameWallManager manager, List<AppOffer> miniGames)
     {
-        this.init(ctx, manager, null, null, miniGames);
+        this.init(ctx, manager, null, null, miniGames, true);
     }
 
 	public GameWallImpl(Context ctx, final Bee7GameWallManager manager, String apiKey) {
-        this.init(ctx, manager, apiKey, null, null);
+        this.init(ctx, manager, apiKey, null, null, false);
     }
     
     public GameWallImpl(Context ctx, final Bee7GameWallManager manager, String apiKey, String vendorId, List<AppOffer> miniGames) {
-        this.init(ctx, manager, apiKey, vendorId, miniGames);
+        this.init(ctx, manager, apiKey, vendorId, miniGames, true);
     }
 
-    private void init(Context ctx, final Bee7GameWallManager manager, String apiKey, String vendorId, List<AppOffer> miniGames)
+    public GameWallImpl(Context ctx, final Bee7GameWallManager manager, String apiKey, String vendorId, List<AppOffer> miniGames, boolean showNotifications) {
+        this.init(ctx, manager, apiKey, vendorId, miniGames, showNotifications);
+    }
+
+    private void init(Context ctx, final Bee7GameWallManager manager, String apiKey, String vendorId, final List<AppOffer> miniGames, boolean showNotifications)
     {
+        Logger.debug(TAG, "Bee7 game wall version: " + BEE7_GAMEWALL_VERSION  + ", Bee7 SDK version " + Bee7.LIB_VERSION);
         this.context = ctx;
         this.manager = manager;
 
@@ -101,9 +125,13 @@ public class GameWallImpl  implements AppOffersModelListener, NotifyReward.Displ
             innerApps.addAll(miniGames);
         }
 
-        mRewardQueue = new RewardQueue();
+        if (manager instanceof Bee7GameWallManagerV2) {
+            notificationQueue = new BannerNotificationQueue(context, (Bee7GameWallManagerV2)manager, showNotifications);
+        } else {
+            Logger.warn(TAG, "Bee7GameWallManagerV2 is not implemented, banner notifications will not work.");
+        }
 
-        mPublisher = new DefaultPublisher();
+        mPublisher = DefaultPublisher.getInstance();
 
         mPublisher.disableProgressIndicator();
 
@@ -112,9 +140,12 @@ public class GameWallImpl  implements AppOffersModelListener, NotifyReward.Displ
         mPublisher.setTestVendorId(BEE7_VENDOR_ID);
         mPublisher.setProxyEnabled(true);
 
+        mRewardQueue = new RewardQueue(mPublisher);
+
         mPublisher.setOnEnableChangeListener(new OnEnableChangeListener() {
             @Override
             public void onEnableChange(boolean enabled) {
+                Logger.debug(TAG, "Publisher OnEnableChangeListener onEnableChange " + enabled);
                 if (mPendingGWBtnImpression) {
                     mPendingGWBtnImpression = false;
 
@@ -124,10 +155,31 @@ public class GameWallImpl  implements AppOffersModelListener, NotifyReward.Displ
                 }
 
                 if (manager != null) {
-                    manager.onAvailableChange(enabled && mPublisher.getAppOffersModel().hasAnyAppOffers());
+                    manager.onAvailableChange(isAvailable(enabled));
                 }
+
+                if (enabled && mPublisher != null) {
+                    int maxDailyRewardFreq = 1;
+
+                    if (mPublisher.isEnabled()) {
+                        maxDailyRewardFreq = mPublisher.getAppOffersModel().getVideoPrequalGlobalConfig().getMaxDailyRewardFreq();
+                    }
+
+                    sharedPreferencesRewardsHelper = new SharedPreferencesRewardsHelper(context, maxDailyRewardFreq);
+
+                    if (notificationQueue != null) {
+                        notificationQueue.setBannerNotificationConfig(mPublisher);
+                    }
+
+                    tryClaim();
+
+                    saveAppStartAndTriggerNotifications();
+                }
+
             }
         });
+
+        mPublisher.getAppOffersModel().addAppOffersModelListener(this);
 
         mPublisher.setOnReportingIdChangeListener(new OnReportingIdChangeListener() {
             @Override
@@ -150,7 +202,7 @@ public class GameWallImpl  implements AppOffersModelListener, NotifyReward.Displ
                     Logger.debug(TAG, "Canceled starting");
 
                     if (manager != null) {
-                        manager.onAvailableChange(false);
+                        manager.onAvailableChange(isAvailable(false));
                     }
                 }
 
@@ -164,7 +216,7 @@ public class GameWallImpl  implements AppOffersModelListener, NotifyReward.Displ
                     Logger.debug(TAG, "Started - enabled=" + result);
 
                     if (manager != null && !result) {
-                        manager.onAvailableChange(false);
+                        manager.onAvailableChange(isAvailable(false));
                     }
 
                     int maxDailyRewardFreq = 1;
@@ -173,9 +225,15 @@ public class GameWallImpl  implements AppOffersModelListener, NotifyReward.Displ
                         maxDailyRewardFreq = mPublisher.getAppOffersModel().getVideoPrequalGlobalConfig().getMaxDailyRewardFreq();
                     }
 
+                    if (notificationQueue != null) {
+                        notificationQueue.setBannerNotificationConfig(mPublisher);
+                    }
+
                     sharedPreferencesRewardsHelper = new SharedPreferencesRewardsHelper(context, maxDailyRewardFreq);
 
-                    tryClaim();
+                    //tryClaim();
+
+                    //saveAppStartAndTriggerNotifications();
                 }
 
                 @Override
@@ -183,11 +241,41 @@ public class GameWallImpl  implements AppOffersModelListener, NotifyReward.Displ
                     Logger.debug(TAG, "Error starting: {0}", e.toString());
 
                     if (manager != null) {
-                        manager.onAvailableChange(false);
+                        manager.onAvailableChange(isAvailable(false));
                     }
                 }
             });
         }
+    }
+
+    private void saveAppStartAndTriggerNotifications() {
+        try {
+            SharedPreferencesNotificationsHelper sharedPreferencesNotificationsHelper = new SharedPreferencesNotificationsHelper(context, mPublisher);
+
+            if (mPublisher.saveAppStartTimestamp()) {
+                sharedPreferencesNotificationsHelper.clearBannerNotificationCount();
+            }
+
+            //if we should remind player
+            if (sharedPreferencesNotificationsHelper.shouldRemindPlayer(
+                    com.bee7.gamewall.Utils.getNumberOfItemsInGwUnitListHolder(context),
+                    com.bee7.gamewall.Utils.isPortrate(context))) {
+                if (notificationQueue != null) {
+                    notificationQueue.addReminderNotificationBannerToQueue();
+                }
+            }
+            //if player is in low currency state
+            if (sharedPreferencesNotificationsHelper.shouldShowLowCurrencyBanner(
+                    com.bee7.gamewall.Utils.getNumberOfItemsInGwUnitListHolder(context),
+                    com.bee7.gamewall.Utils.isPortrate(context))) {
+                if (notificationQueue != null) {
+                    notificationQueue.addLowCurrencyNotificationBannerToQueue();
+                }
+            }
+        } catch (Exception e) {
+            Logger.debug(TAG, e, "Failed save app start session: {0}", e.getMessage());
+        }
+
     }
 
     public void setAgeGate(boolean hasPassed) {
@@ -196,9 +284,27 @@ public class GameWallImpl  implements AppOffersModelListener, NotifyReward.Displ
         }
     }
 
+    public void setImmersiveMode(boolean _immersiveMode) {
+        immersiveMode = _immersiveMode;
+    }
+
     public void setTestVariant(String testId) {
         if (mPublisher != null) {
             mPublisher.setTestVariant(testId);
+        }
+    }
+
+    public void setStoreId(String storeId) {
+        if (mPublisher != null) {
+            mPublisher.setStoreId(storeId);
+
+            DialogDebug.setStoreId(storeId);
+        }
+    }
+
+    public void requestAppOffersOfType(Publisher.AppOffersType type) {
+        if (mPublisher != null) {
+            mPublisher.requestAppOffersOfType(type);
         }
     }
 
@@ -223,6 +329,10 @@ public class GameWallImpl  implements AppOffersModelListener, NotifyReward.Displ
      */
     public static void startAppOffer(final AppOffer appOffer, final AppOfferWithResult appOfferWithResult, final Context context, final Publisher mPublisher, Publisher.AppOfferStartOrigin origin)
     {
+        if (onOfferListener != null && appOffer.getState() == AppOffer.State.CONNECTED && !appOffer.isInnerApp()) {
+            onOfferListener.onConnectedOfferClick(appOffer.getId());
+        }
+
         // call provided method in order to start inner app
         if (appOffer.isInnerApp()) {
             try {
@@ -254,7 +364,8 @@ public class GameWallImpl  implements AppOffersModelListener, NotifyReward.Displ
 
         final DialogRedirecting dialogRedirecting = new DialogRedirecting(context, appOffer,
                 mPublisher.getAppOffersModel().getGameWallConfiguration().isTutorialEnabledRedirecting(),
-                mPublisher.getAppOffersModel().getGameWallConfiguration().getRedirectingTimeout());
+                mPublisher.getAppOffersModel().getGameWallConfiguration().getRedirectingTimeout(),
+                immersiveMode);
         dialogRedirecting.setOnCancelListener(new DialogInterface.OnCancelListener() {
             @Override
             public void onCancel(DialogInterface dialog) {
@@ -333,9 +444,11 @@ public class GameWallImpl  implements AppOffersModelListener, NotifyReward.Displ
 
             @Override
             public void onResults(RewardCollection result) {
-
+                Logger.debug(TAG, "claimReward onResults {0}", result.toJson().toString());
                 for (Reward reward : result) {
                     if (addReward(reward)) {
+                        addNotificationToQueue(reward);
+
                         if (manager != null) {
                             manager.onGiveReward(reward);
                         }
@@ -373,63 +486,41 @@ public class GameWallImpl  implements AppOffersModelListener, NotifyReward.Displ
     /**
      * Called from the activity in order to display the game wall
      */
-    public void show(final Activity activity) {
-        Logger.info(TAG, "show()");
-        mActivity = activity;
+    public void show(Activity _activity) {
+        Logger.debug(TAG, "show()");
 
-        if (mGameWallView == null) {
-            mGameWallView = (GameWallView) activity.getLayoutInflater().inflate(R.layout.gamewall_view, null);
+        //If we are returning from mini-game and nothing was cleared we just show it
+        if (minigameStarted && mActivity != null && mGameWallView != null) {
+            minigameStarted = false;
+            mGameWallView.setVisibility(View.VISIBLE);
+            markGameWallAsShown();
+            mGameWallView.disableClickEvents = false;
 
-            //we intercept any touch events so they do not get send to the underneath view
-            mGameWallView.setOnTouchListener(new View.OnTouchListener() {
-                @Override
-                public boolean onTouch(View v, MotionEvent event) {
-                    Logger.debug(TAG, "onTouch");
-                    return true;
-                }
-            });
+        } else {
 
-            mGameWallView.findViewById(R.id.gamewallHeaderButtonClose).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
+            mActivity = _activity;
 
-                    synchronized (GameWallView.lastClickSync) {
-                        if ((SystemClock.elapsedRealtime() - GameWallView.lastClickTimestamp) < 500) {
-                            return;
-                        }
-                        GameWallView.lastClickTimestamp = SystemClock.elapsedRealtime();
+            if (mGameWallView == null) {
+                mGameWallView = (GameWallView) mActivity.getLayoutInflater().inflate(R.layout.gamewall_view, null);
 
-                        if (mShown) {
-                            mGameWallView.closeVideo(false);
-                        }
+                setHeader();
 
-                        if (manager != null) {
-                            if (manager.onGameWallWillClose()) {
-                                hide();
-                            } else {
-                                // pending hide call, extend the blocking
-                                GameWallView.lastClickTimestamp += 3000;
-                                if (mGameWallView != null) {
-                                    mGameWallView.disableClickEvents = true;
-                                }
-                            }
-                        } else {
-                            hide();
-                        }
+                //we intercept any touch events so they do not get send to the underneath view
+                mGameWallView.setOnTouchListener(new View.OnTouchListener() {
+                    @Override
+                    public boolean onTouch(View v, MotionEvent event) {
+                        Logger.debug(TAG, "onTouch");
+                        return true;
                     }
-                }
-            });
+                });
+            }
 
-            mPublisher.getAppOffersModel().addAppOffersModelListener(this);
-        }
+            if (mGameWallView != null) {
+                mGameWallView.disableClickEvents = true;
+            }
 
-        try {
-            if (minigameStarted) {
-                minigameStarted = false;
-
-                mGameWallView.setVisibility(View.VISIBLE);
-            } else {
-                mGameWallView.init(mPublisher, this);
+            try {
+                mGameWallView.init(mPublisher, this, immersiveMode, this, manager, dialogDebugInterface);
 
                 mGameWallView.getGamesScrollView().fullScroll(View.FOCUS_UP);
 
@@ -438,7 +529,7 @@ public class GameWallImpl  implements AppOffersModelListener, NotifyReward.Displ
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB &&
                         animate) {
                     mGameWallView.setVisibility(View.INVISIBLE);
-                    activity.getWindow().addContentView(mGameWallView, lp);
+                    mActivity.getWindow().addContentView(mGameWallView, lp);
 
                     mGameWallView.post(new Runnable() {
                         @Override
@@ -466,22 +557,140 @@ public class GameWallImpl  implements AppOffersModelListener, NotifyReward.Displ
                         }
                     });
                 } else {
-                    activity.getWindow().addContentView(mGameWallView, lp);
+                    mActivity.getWindow().addContentView(mGameWallView, lp);
                     mGameWallView.viewShown();
                     checkForOffers();
                 }
+
+                markGameWallAsShown();
+            } catch (Exception e) {
+                Logger.error(TAG, e, "{0}", e.getMessage());
             }
-
-            mShown = true;
-
-            mPublisher.onGameWallImpression();
-
-            if (manager != null) {
-            	manager.onVisibleChange(true, true);
-            }
-        } catch (Exception e) {
-            Logger.error(TAG, e, "{0}", e.getMessage());
         }
+    }
+
+    public void show(Dialog dialog) {
+        Logger.debug(TAG, "show()");
+
+        //If we are returning from mini-game and nothing was cleared we just show it
+        if (minigameStarted && mDialog != null && mGameWallView != null) {
+            minigameStarted = false;
+            mDialog.show();
+            markGameWallAsShown();
+            mGameWallView.disableClickEvents = false;
+        } else {
+
+            mDialog = dialog;
+
+            if (immersiveMode && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                dialog.setCanceledOnTouchOutside(false);
+                dialog.getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
+                dialog.getWindow().addFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                com.bee7.sdk.common.util.Utils.setImmersiveModeFlags(dialog.getWindow().getDecorView());
+            }
+
+            if (mGameWallView == null) {
+                mGameWallView = (GameWallView) dialog.getLayoutInflater().inflate(R.layout.gamewall_view, null);
+
+                setHeader();
+
+                //we intercept any touch events so they do not get send to the underneath view
+                mGameWallView.setOnTouchListener(new View.OnTouchListener() {
+                    @Override
+                    public boolean onTouch(View v, MotionEvent event) {
+                        Logger.debug(TAG, "onTouch");
+                        return true;
+                    }
+                });
+            }
+
+            try {
+                mGameWallView.init(mPublisher, this, immersiveMode, this, manager, dialogDebugInterface);
+
+                mGameWallView.getGamesScrollView().fullScroll(View.FOCUS_UP);
+
+                ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+                try {
+                    dialog.getWindow().addContentView(mGameWallView, lp);
+                } catch (Exception e) {
+                    Logger.error(TAG, e, "{0}", e.getMessage());
+                }
+                checkForOffers();
+
+                dialog.show();
+
+                if (immersiveMode && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
+                }
+
+                markGameWallAsShown();
+                mGameWallView.disableClickEvents = false;
+            } catch (Exception e) {
+                Logger.error(TAG, e, "{0}", e.getMessage());
+            }
+        }
+    }
+
+    DialogDebug.DialogDebugInterface dialogDebugInterface = new DialogDebug.DialogDebugInterface() {
+        @Override
+        public void onRewardGenerated(Reward reward) {
+            if (addReward(reward)) {
+                addNotificationToQueue(reward);
+                manager.onGiveReward(reward);
+            }
+        }
+    };
+
+    private void markGameWallAsShown() {
+        mShown = true;
+
+        mGameWallView.viewShown();
+
+        mPublisher.onGameWallImpression();
+        mPublisher.saveGameWallOpenTimestamp();
+
+        if (manager != null) {
+            manager.onVisibleChange(true, true);
+        }
+
+        resumeShowingOfRewardBanners();
+
+        if (notificationQueue != null) {
+            closeBannerNotification(); //Stop showing banners
+            notificationQueue.setGWVisibility(mShown);
+        }
+    }
+
+    private void resumeShowingOfRewardBanners() {
+        if (notificationQueue != null) {
+            notificationQueue.setGWVisibility(mShown);
+            notificationQueue.clearNonRewardBannersFromQueue();
+
+            //delay so we don't do to many things at the same time
+            mGameWallView.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    notificationQueue.resumeNotificationShowingOnGameWall();
+                }
+            }, 500);
+        }
+    }
+
+
+    private void setHeader() {
+        View headerView = null;
+        if (bee7GameWallViewsInterface != null) {
+            headerView = bee7GameWallViewsInterface.provideHeaderView(gamewallHeaderCallbackInterface);
+            Logger.debug(TAG, "headerView provideHeaderView " + ((headerView != null) ? "not null" : "null"));
+        }
+
+        if (headerView == null) {
+            headerView = new GameWallHeader(context, gamewallHeaderCallbackInterface);
+            Logger.debug(TAG, "headerView default header view");
+        }
+
+        mGameWallView.setHeader(headerView);
     }
 
     /**
@@ -498,43 +707,27 @@ public class GameWallImpl  implements AppOffersModelListener, NotifyReward.Displ
      * @return returns true if bubble was displayed or if notification bubbles are disabled
      */
     public boolean showReward(Reward reward, Activity activity) {
+        Logger.debug(TAG, "showReward");
         if (reward.getVirtualCurrencyAmount() > 0) {
 
-            NotifyReward msg = new NotifyReward(activity, this);
+            mRewardQueue.setImmersiveMode(immersiveMode);
 
-            String amountStr = String.format("%+,d", reward.getVirtualCurrencyAmount());
+            if (mPublisher != null) {
+                NotifyReward msg = new NotifyReward(this);
 
-            Bitmap bm = null;
+                msg.addMsg(
+                        getRewardAmountString(reward),
+                        getAppIcon(reward),
+                        context.getResources().getDrawable(R.drawable.bee7_icon_reward),
+                        getPublisherDrawable(),
+                        reward.isVideoReward(),
+                        reward.getPending());
 
-            if (reward.isHidden()) {
-                bm = BitmapFactory.decodeResource(context.getResources(), R.drawable.default_game_icon);
-            } else {
-                if (!reward.isVideoReward()) {
-                    byte[] ba = AssetsManager.getInstance().getCachedBitmap(context, reward.getIconUrl(getRewardIconUrlSize(context.getResources())));
-
-                    UnscaledBitmapLoader.ScreenDPI screenDPI = UnscaledBitmapLoader.ScreenDPI.parseDensity(context.getResources()
-                            .getString(R.string.bee7_gamewallSourceIconDPI));
-
-                    bm = AssetsManager.getInstance().makeBitmap(ba, context, screenDPI.getDensity());
-                } else {
-                    bm = AssetsManager.getInstance().getVideoRewardBitmap(context);
-                }
+                msg.queueOnStoppedQueue = true;
+                mRewardQueue.addMessage(msg);
             }
 
-            Drawable bitmapPublisherIcon = null;
-            try {
-                bitmapPublisherIcon = activity.getPackageManager().getApplicationIcon(activity.getApplicationInfo());
-            } catch (Exception ignore) { }
-
-            msg.addMsg(amountStr, bm,
-                    activity.getResources().getDrawable(R.drawable.bee7_icon_reward),
-                    bitmapPublisherIcon, reward.isVideoReward());
-
-            msg.queueOnStoppedQueue = true;
-
-            mRewardQueue.addMessage(msg);
-
-            mRewardQueue.startProcessing(activity);
+            mRewardQueue.startProcessing(activity, immersiveMode);
 
             return true;
         } else {
@@ -542,6 +735,61 @@ public class GameWallImpl  implements AppOffersModelListener, NotifyReward.Displ
 
             return false;
         }
+    }
+
+    /**
+     *
+     * @return true if banner notification can be shown, false otherwise
+     */
+    public boolean canShowReward(Reward reward, Activity activity) {
+        Logger.debug(TAG, "canShowReward: {0}", reward.toJson().toString());
+        if (mPublisher != null && !reward.isVideoReward()) { //check if should display banner notification instead of dialog bubble, or if it is video reward
+            PublisherConfiguration.BannerNotificationConfig bannerNotification = mPublisher.getBannerNotificationConfig();
+            if (bannerNotification != null && bannerNotification.isEnabled() && notificationQueue != null) {
+                return true;
+            } else {
+                Logger.debug(TAG, "Cant show notification banner; bannerNotification is null or bannerNotification is not disabled or notificationQueue is null");
+            }
+        } else {
+            if (mPublisher == null) {
+                Logger.debug(TAG, "Cant show notification banner; mPublisher is null");
+            }
+            if (reward.isVideoReward()) {
+                Logger.debug(TAG, "Cant show notification banner; reward.isVideoReward");
+            }
+        }
+        return false;
+    }
+
+    private String getRewardAmountString(Reward reward) {
+        return String.format("%+,d", reward.getVirtualCurrencyAmount());
+    }
+
+    private Bitmap getAppIcon(Reward reward) {
+        Bitmap bm = null;
+        if (reward.isHidden()) {
+            bm = BitmapFactory.decodeResource(context.getResources(), R.drawable.default_game_icon);
+        } else {
+            if (!reward.isVideoReward()) {
+                byte[] ba = AssetsManager.getInstance().getCachedBitmap(context, reward.getIconUrl(getRewardIconUrlSize(context.getResources())));
+
+                UnscaledBitmapLoader.ScreenDPI screenDPI = UnscaledBitmapLoader.ScreenDPI.parseDensity(context.getResources()
+                        .getString(R.string.bee7_gamewallSourceIconDPI));
+
+                bm = AssetsManager.getInstance().makeBitmap(ba, context, screenDPI.getDensity());
+            } else {
+                bm = AssetsManager.getInstance().getVideoRewardBitmap(context);
+            }
+        }
+        return bm;
+    }
+
+    private Drawable getPublisherDrawable() {
+        Drawable bitmapPublisherIcon = null;
+        try {
+            bitmapPublisherIcon = context.getPackageManager().getApplicationIcon(context.getApplicationInfo());
+        } catch (Exception ignore) { }
+        return bitmapPublisherIcon;
     }
 
     public void onGameWallButtonImpression() {
@@ -553,7 +801,7 @@ public class GameWallImpl  implements AppOffersModelListener, NotifyReward.Displ
     }
 
     private static void showNoConnectionDialog(Context context) {
-        new DialogNoInternet(context).show();
+        new DialogNoInternet(context, immersiveMode).show();
     }
 
     public static AppOffer.IconUrlSize getAppOfIconUrlSize(Resources resources) {
@@ -586,6 +834,7 @@ public class GameWallImpl  implements AppOffersModelListener, NotifyReward.Displ
 
         if (mShown) {
             mPublisher.onGameWallImpression();
+            mPublisher.saveGameWallOpenTimestamp();
         }
 
         // Claim reward if available
@@ -595,16 +844,22 @@ public class GameWallImpl  implements AppOffersModelListener, NotifyReward.Displ
             mGameWallView.onResume();
 
             //we check if any video is active
-            if (mGameWallView.findViewWithVideoView() == null &&
-                    mGameWallView.getVideoViewDialog() == null)
-            checkForOffers();
+            if ((mGameWallView.findViewWithVideoView() == null && mGameWallView.getVideoDialog() == null) ||
+                    (mGameWallView.getVideoDialog() != null && !mGameWallView.getVideoDialog().isShowing())) {
+                checkForOffers();
+            }
         }
+
+        saveAppStartAndTriggerNotifications();
     }
 
     /**
      * Called from activity onPause
      */
     public void pause() {
+        if(mShown) {
+            mPublisher.saveGameWallCloseTimestamp();
+        }
         mPublisher.pause();
         if (mGameWallView != null && mShown) {
             mGameWallView.onPause();
@@ -616,6 +871,7 @@ public class GameWallImpl  implements AppOffersModelListener, NotifyReward.Displ
      */
     public void destroy() {
         mPublisher.stop();
+        closeBannerNotification();
         if (mGameWallView != null && mShown) {
             mGameWallView.onDestroy();
         }
@@ -626,7 +882,7 @@ public class GameWallImpl  implements AppOffersModelListener, NotifyReward.Displ
      * was changed
      */
     public void updateView() {
-        Logger.info(TAG, "updateView()");
+        Logger.debug(TAG, "updateView()");
         if (mShown) {
             checkForOffers();
         }
@@ -637,15 +893,14 @@ public class GameWallImpl  implements AppOffersModelListener, NotifyReward.Displ
      */
     public void hide() {
         if (mGameWallView != null) {
-            mGameWallView.disableClickEvents = false;
+            mGameWallView.disableClickEvents = true;
         }
 
         try {
-            if (mPublisher != null && mPublisher.getAppOffersModel() != null) {
-                mPublisher.getAppOffersModel().removeAppOffersModelListener(this);
-            }
-
             mShown = false;
+            if (notificationQueue != null) {
+                notificationQueue.setGWVisibility(mShown);
+            }
 
             if (mActivity != null) {
                 if (mPublisher != null) {
@@ -655,59 +910,116 @@ public class GameWallImpl  implements AppOffersModelListener, NotifyReward.Displ
                 if (minigameStarted && mGameWallView != null) {
                     mGameWallView.setVisibility(View.GONE);
                 } else {
-                    final ViewGroup rootView = (ViewGroup) mActivity.findViewById(android.R.id.content);
+                    if (mGameWallView != null && mGameWallView.getParent() != null) {
+                        final ViewGroup rootView = (ViewGroup) mGameWallView.getParent();
 
-                    if (rootView != null && mGameWallView != null) {
-                        if (mGameWallView.getVideoViewDialog() != null) {
-                            mGameWallView.getVideoViewDialog().hide(true);
+                        if (rootView != null && mGameWallView != null) {
+                            if (mGameWallView.getVideoDialog() != null) {
+                                mGameWallView.getVideoDialog().hide(true);
+                            }
+
+                            for (int i = 0; i < rootView.getChildCount(); i++) {
+                                if (rootView.getChildAt(i).getId() == mGameWallView.getId()) {
+
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB &&
+                                            animate) {
+                                        mGameWallView.post(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                Animation anim = AnimFactory.createSlideOutFromTop(mGameWallView);
+                                                anim.setDuration(AnimFactory.ANIMATION_DURATION_LONG);
+                                                anim.setInterpolator(new AccelerateInterpolator(3f));
+                                                anim.setAnimationListener(new Animation.AnimationListener() {
+                                                    @Override
+                                                    public void onAnimationStart(Animation animation) {
+                                                    }
+
+                                                    @Override
+                                                    public void onAnimationEnd(Animation animation) {
+                                                        mGameWallView.removeOfferViews();
+                                                        rootView.removeView(mGameWallView);
+                                                    }
+
+                                                    @Override
+                                                    public void onAnimationRepeat(Animation animation) {
+                                                    }
+                                                });
+                                                mGameWallView.startAnimation(anim);
+                                            }
+                                        });
+                                    } else {
+                                        mGameWallView.removeOfferViews();
+                                        rootView.removeView(mGameWallView);
+                                    }
+
+                                    if (mDialog != null) {
+                                        mDialog.dismiss();
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    mActivity = null;
+                    mGameWallView = null;
+                }
+
+                if (manager != null) {
+                	manager.onVisibleChange(false, true);
+                }
+
+                if(mPublisher != null) {
+                    mPublisher.saveGameWallCloseTimestamp();
+                }
+
+            } else if (mDialog != null) {
+
+                if (mPublisher != null) {
+                    mPublisher.onGameWallCloseImpression();
+                }
+
+                if (minigameStarted && mDialog != null) {
+                    mDialog.dismiss();
+                } else {
+                    if (mGameWallView != null && mGameWallView.getParent() != null) {
+                        ViewGroup rootView = (ViewGroup) mGameWallView.getParent();
+
+                        if (mGameWallView.getVideoDialog() != null &&
+                                mGameWallView.getVideoDialog().isShowing()) {
+                            mGameWallView.getVideoDialog().hide(true);
                         }
 
                         for (int i = 0; i < rootView.getChildCount(); i++) {
                             if (rootView.getChildAt(i).getId() == mGameWallView.getId()) {
 
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB &&
-                                        animate) {
-                                    mGameWallView.post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            Animation anim = AnimFactory.createSlideOutFromTop(mGameWallView);
-                                            anim.setDuration(AnimFactory.ANIMATION_DURATION_LONG);
-                                            anim.setInterpolator(new AccelerateInterpolator(3f));
-                                            anim.setAnimationListener(new Animation.AnimationListener() {
-                                                @Override
-                                                public void onAnimationStart(Animation animation) {
-                                                }
+                                if (mGameWallView != null && mGameWallView.getParent() != null) {
+                                    ((ViewGroup)mGameWallView.getParent()).removeView(mGameWallView);
+                                }
 
-                                                @Override
-                                                public void onAnimationEnd(Animation animation) {
-                                                    mGameWallView.removeOfferViews();
-                                                    rootView.removeView(mGameWallView);
-                                                }
-
-                                                @Override
-                                                public void onAnimationRepeat(Animation animation) {
-                                                }
-                                            });
-                                            mGameWallView.startAnimation(anim);
-                                        }
-                                    });
-                                } else {
-                                    mGameWallView.removeOfferViews();
-                                    rootView.removeView(mGameWallView);
+                                if (mDialog != null) {
+                                    mDialog.dismiss();
                                 }
                             }
                         }
                     }
+
+                    mGameWallView = null;
+                    mDialog = null;
                 }
 
-                mActivity = null;
-                
+
                 if (manager != null) {
-                	manager.onVisibleChange(false, true);
+                    manager.onVisibleChange(false, true);
                 }
+
+                if(mPublisher != null) {
+                    mPublisher.saveGameWallCloseTimestamp();
+                }
+
+
             }
         } catch (Exception e) {
-            Logger.error(TAG, e, "hide failed");
+            Logger.error(TAG, e, "hide failed {0}", e.getMessage());
         }
 
         // reset blocking for GW
@@ -736,8 +1048,9 @@ public class GameWallImpl  implements AppOffersModelListener, NotifyReward.Displ
                 mGameWallView.closeVideo(true);
             } else if (mShown && mGameWallView.findViewWithVideoView() != null) {
                 mGameWallView.closeVideo(true);
-            } else if (mShown && mGameWallView.getVideoViewDialog() != null) {
-                mGameWallView.getVideoViewDialog().hide(false);
+            } else if (mShown && mGameWallView.getVideoDialog() != null &&
+                    mGameWallView.getVideoDialog().isShowing()) {
+                mGameWallView.getVideoDialog().hide(false);
             } else {
                 if (mShown) {
                     if (manager != null) {
@@ -767,7 +1080,12 @@ public class GameWallImpl  implements AppOffersModelListener, NotifyReward.Displ
      */
     @Override
     public void onAppOffersChange(AppOffersModelEvent event) {
-        Logger.info(TAG, "onAppOffersChange() ");
+        Logger.debug(TAG, "onAppOffersChange() ");
+
+        if (manager != null) {
+            boolean enabled = mPublisher != null && mPublisher.isEnabled();
+            manager.onAvailableChange(isAvailable(enabled));
+        }
 
         /*boolean available = mPublisher != null && mPublisher.isEnabled() && mPublisher.getAppOffersModel().hasAnyAppOffers();
 
@@ -809,11 +1127,32 @@ public class GameWallImpl  implements AppOffersModelListener, NotifyReward.Displ
         }*/
     }
 
+    private boolean isAvailable(boolean enabled) {
+        //there are mini games
+        if (innerApps != null && innerApps.size() > 0) {
+            return true;
+        }
+
+        //publisher is enabled and there are connected apps
+        if (enabled && mPublisher.getAppOffersModel().getCurrentOrderedAppOffers(
+                AppOffersModel.AppOffersState.CONNECTED_AND_PENDING_INSTALL).size() > 0) {
+            return true;
+        }
+
+        //publisher is enabled, there are offers and we have configured layout to show them
+        if (enabled && mPublisher.getAppOffersModel().hasAnyAppOffers() &&
+                mPublisher.getAppOffersModel().getGameWallConfiguration().getLayoutMap().size() > 0) {
+            return true;
+        }
+
+        return false;
+    }
+
     /**
      * refreshes offers and updates ListView and GridView accordingly
      */
     public void checkForOffers() {
-        Logger.info(TAG, "checkForOffers()");
+        Logger.debug(TAG, "checkForOffers()");
         AppOffersModel appOffersModel = mPublisher.getAppOffersModel();
 
         appOffersModel.checkOffersState();
@@ -895,14 +1234,169 @@ public class GameWallImpl  implements AppOffersModelListener, NotifyReward.Displ
     @Override
     public void onVideoRewardGenerated(AppOffer appOffer) {
         Logger.debug("GameWallImpl", "onVideoRewardGenerated " + appOffer.getLocalizedName() + " " + appOffer.getId());
-        if (sharedPreferencesRewardsHelper != null && !sharedPreferencesRewardsHelper.hasBeenRewardAlreadyGiven(appOffer.getId(), appOffer.getCampaignId())) {
+        if ((sharedPreferencesRewardsHelper != null
+                &&
+                !sharedPreferencesRewardsHelper.hasBeenRewardAlreadyGiven(appOffer.getId(), appOffer.getCampaignId()))
+                ||
+                (sharedPreferencesRewardsHelper != null && com.bee7.sdk.common.util.Utils.isDevBackendEnabled(context))) {
             Reward reward = mPublisher.generateVideoReward(appOffer);
             if (manager != null && reward != null) {
                 sharedPreferencesRewardsHelper.saveGivenRewardKey(appOffer.getId(), appOffer.getCampaignId());
-                manager.onGiveReward(reward);
+
+                if (addReward(reward)) {
+                    addNotificationToQueue(reward);
+                    manager.onGiveReward(reward);
+                }
             }
         }
 
-        mGameWallView.updateGameWallUnit(appOffer);
+        if (mGameWallView != null) {
+            mGameWallView.updateGameWallUnit(appOffer);
+        }
+    }
+
+    public void setOnOfferListener(OnOfferListener _onOfferListener) {
+        onOfferListener = _onOfferListener;
+        mPublisher.setOnOfferListener(_onOfferListener);
+    }
+
+    public void setBee7GameWallViewsInterface(Bee7GameWallViewsInterface bee7GameWallViewsInterface) {
+        this.bee7GameWallViewsInterface = bee7GameWallViewsInterface;
+    }
+
+    private GamewallHeaderCallbackInterface gamewallHeaderCallbackInterface = new GamewallHeaderCallbackInterface() {
+        @Override
+        public void onClose() {
+            synchronized (GameWallView.lastClickSync) {
+                if ((SystemClock.elapsedRealtime() - GameWallView.lastClickTimestamp) < 500) {
+                    return;
+                }
+                GameWallView.lastClickTimestamp = SystemClock.elapsedRealtime();
+
+                if (mShown) {
+                    mGameWallView.closeVideo(false);
+                }
+
+                if (manager != null) {
+                    if (manager.onGameWallWillClose()) {
+                        hide();
+                    } else {
+                        // pending hide call, extend the blocking
+                        GameWallView.lastClickTimestamp += 3000;
+                        if (mGameWallView != null) {
+                            mGameWallView.disableClickEvents = true;
+                        }
+                    }
+                } else {
+                    hide();
+                }
+            }
+        }
+    };
+
+    @Override
+    public Reward showBannerNotification(View anchorView, BannerNotificationPosition bannerNotificationPosition) {
+        Logger.debug(TAG, "showBannerNotification");
+        if (notificationQueue != null && !notificationQueue.isEmpty()) {
+            return notificationQueue.startProcessing(context, anchorView, bannerNotificationPosition, (Bee7GameWallManagerV2) manager, mGameWallView);
+        }
+
+        if (manager != null) {
+            if (manager instanceof Bee7GameWallManagerV2) {
+                ((Bee7GameWallManagerV2) manager).onBannerNotificationVisibilityChanged(false);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @return true if banner notification is shown, false otherwise
+     */
+    @Override
+    public boolean isBannerNotificationShown() {
+        if (notificationQueue != null) {
+            return notificationQueue.isBannerNotificationShown();
+        }
+        return false;
+    }
+
+    /**
+     * Closes any shown banner notification and dismisses ant pending ones
+     */
+    @Override
+    public void closeBannerNotification() {
+        if (notificationQueue != null) {
+            notificationQueue.closeBannerNotification();
+        }
+    }
+
+    /**
+     * Call when players virtual currency amount is low.
+     * Will trigger GamewallBannerNotificationInterface.OnPendingBannerNotification if
+     */
+    @Override
+    public void setVirtualCurrencyState(boolean lowCurrency) {
+        if (notificationQueue != null) {
+            notificationQueue.setVirtualCurrencyState(lowCurrency);
+        }
+    }
+
+    /**
+     * If set to true this will enable bee7 notification banners and show any pending ones,
+     * if set to false, notification banners will be disabled and any shown banners hidden.
+     * @param enableNotifications
+     */
+    @Override
+    public void toggleNotificationShowing(boolean enableNotifications) {
+        if (notificationQueue != null) {
+            notificationQueue.toggleNotificationShowing(enableNotifications);
+        }
+    }
+
+    public boolean saveAppStartTimestamp() {
+        if (mPublisher != null) {
+            return mPublisher.saveAppStartTimestamp();
+        }
+        return false;
+    }
+
+    public void saveAppCloseTimestamp() {
+        if (mPublisher != null) {
+            mPublisher.saveAppCLoseTimestamp();
+        }
+    }
+
+    @Override
+    public void toggleNotificationShowingOnGameWall(boolean notificationShowing) {
+        if (notificationQueue != null) {
+            notificationQueue.toggleNotificationShowingOnGameWall(notificationShowing);
+        }
+    }
+
+    private void addNotificationToQueue(Reward reward) {
+        if (mPublisher != null && !reward.isVideoReward()) { //check if should display banner notification instead of dialog bubble, or if it is video reward
+            PublisherConfiguration.BannerNotificationConfig bannerNotification = mPublisher.getBannerNotificationConfig();
+
+            if (bannerNotification != null && bannerNotification.isEnabled() && notificationQueue != null) {
+                notificationQueue.addRewardNotificationBannerToQueue(
+                        getRewardAmountString(reward),
+                        getAppIcon(reward),
+                        getPublisherDrawable(),
+                        reward);
+
+                return;
+            } else {
+                Logger.debug(TAG, "Cant show notification banner; bannerNotification is null or bannerNotification is not disabled or notificationQueue is null");
+            }
+        }
+    }
+
+    public void showDebugTools() {
+        if (com.bee7.sdk.common.util.Utils.isDevBackendEnabled(context)) {
+            ExternalDebugToolsDialog toolsDialog = new ExternalDebugToolsDialog(context, mPublisher);
+            toolsDialog.setTitle("Bee7 Debug tools");
+            toolsDialog.show();
+        }
     }
 }

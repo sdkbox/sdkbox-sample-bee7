@@ -5,6 +5,9 @@ import java.util.Queue;
 
 import android.app.Activity;
 
+import com.bee7.sdk.common.util.Logger;
+import com.bee7.sdk.publisher.DefaultPublisher;
+
 /**
  * Reward notification queue implementation.
  * There can be multiple claimed rewards, and they should be displayed in sequence.
@@ -17,6 +20,13 @@ public class RewardQueue {
 
     private Activity activity;
 
+    private DefaultPublisher mPublisher;
+    private boolean immersiveMode;
+
+    public RewardQueue(DefaultPublisher publisher) {
+        mPublisher = publisher;
+    }
+
     public synchronized RewardQueue addMessage(NotifyReward msg) {
         if (!isProcessing && !msg.queueOnStoppedQueue) {
             return this;
@@ -27,7 +37,8 @@ public class RewardQueue {
         msg.messageQueue = this;
 
         if (q.size() == 1 && isProcessing) {
-            msg.exec();
+            msg.activity = activity;
+            msg.exec(mPublisher);
         }
         return this;
     }
@@ -44,7 +55,7 @@ public class RewardQueue {
 
         NotifyReward msg = q.peek();
         msg.activity = activity;
-        msg.exec();
+        msg.exec(mPublisher);
 
         return this;
     }
@@ -54,39 +65,32 @@ public class RewardQueue {
         return this;
     }
 
-    public synchronized RewardQueue startProcessing(Activity activity) {
+    public synchronized RewardQueue startProcessing(Activity activity, boolean immersiveMode) {
+        Logger.debug(TAG, "startProcessing");
         if(isProcessing) return this;
 
+        this.immersiveMode = immersiveMode;
         this.activity = activity;
         isProcessing = true;
 
         NotifyReward msg = q.peek();
 
         if (msg == null) {
+            Logger.debug(TAG, "msg == null");
             return this;
         }
 
         msg.activity = activity;
-        msg.exec();
+        Logger.debug(TAG, "msg.exec()");
+        msg.exec(mPublisher);
 
         return this;
     }
 
-    public synchronized RewardQueue stopProcessing() {
-        isProcessing = false;
-
-        NotifyReward msg = q.peek();
-
-        if (msg == null) {
-            return this;
-        }
-
-        msg.removeBubble(false, 0);
-
-        return this;
+    public boolean getImmersiveMode() {
+        return immersiveMode;
     }
-
-    public int getQueueLength() {
-        return q.size();
+    public void setImmersiveMode(boolean immersiveMode) {
+        this.immersiveMode = immersiveMode;
     }
 }
