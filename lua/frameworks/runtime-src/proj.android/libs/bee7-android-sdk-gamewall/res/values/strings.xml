@@ -38,5 +38,16 @@
     <string name="bee7_dialog_reward_part4">earn</string>
     <string name="bee7_dialog_reward_part5">in</string>
     <string name="bee7_dialog_reward_part6"></string>
-    
+
+    <!--locked minigame dialog-->
+    <string name="bee7_dialog_locked_minigame_text">Reach level %1$d to unlock this game.</string>
+
+    <!--banner notification-->
+    <string name="bee7_banner_notification_play">Play &amp;</string>
+    <string name="bee7_banner_notification_earn">Earn</string>
+    <string name="bee7_banner_notification_watch">Watch &amp;</string>
+    <string name="bee7_banner_notification_more">More</string>
+
+    <!--video unit-->
+    <string name="bee7_video_unit_download">Download</string>
 </resources>

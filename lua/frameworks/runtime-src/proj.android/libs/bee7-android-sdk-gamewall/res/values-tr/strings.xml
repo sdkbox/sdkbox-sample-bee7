@@ -29,4 +29,15 @@
     <string name="bee7_dialog_reward_part4"></string>
     <string name="bee7_dialog_reward_part5">Uygulamasında</string>
     <string name="bee7_dialog_reward_part6">kazan</string>
+
+    <string name="bee7_dialog_locked_minigame_text">Bu oyunun kilidini açmak için %1$d. seviyeye ulaş.</string>
+
+    <!--banner notification-->
+    <string name="bee7_banner_notification_play">Oyna ve</string>
+    <string name="bee7_banner_notification_earn">Kazan</string>
+    <string name="bee7_banner_notification_watch">Oyna ve</string>
+    <string name="bee7_banner_notification_more">Daha fazla</string>
+
+    <!--video unit-->
+    <string name="bee7_video_unit_download">İndir</string>
 </resources>

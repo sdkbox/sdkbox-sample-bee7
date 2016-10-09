@@ -1,10 +1,13 @@
 package com.bee7.gamewall;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.res.Configuration;
+import android.os.Build;
 import android.os.Bundle;
 
-import com.bee7.sdk.common.util.Logger;
+import com.bee7.sdk.common.util.*;
+import com.bee7.sdk.common.util.Utils;
 
 /**
  * Created by Bee7 on 20/07/15.
@@ -12,15 +15,24 @@ import com.bee7.sdk.common.util.Logger;
 public class GameWallActivity extends Activity {
     private static final String TAG = GameWallActivity.class.getName();
 
+    public final static String IMMERSIVE_MODE_KEY = "immersiveMode";
+
     private boolean visible;
+    private boolean immersiveMode = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
 
+        Intent intent = getIntent();
+        if (intent != null) {
+            immersiveMode = intent.getBooleanExtra(IMMERSIVE_MODE_KEY, false);
+            if (immersiveMode && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                com.bee7.sdk.common.util.Utils.setImmersiveModeFlags(getWindow().getDecorView());
+            }
+        }
         visible = false;
 
-        setTheme(R.style.bee7_ActivityTheme_Transparent);
+        super.onCreate(savedInstanceState);
 
         setContentView(R.layout.gamewall_activity);
 
@@ -81,5 +93,14 @@ public class GameWallActivity extends Activity {
 
     public boolean isVisible() {
         return visible;
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+
+        if (immersiveMode && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            Utils.setImmersiveModeFlags(getWindow().getDecorView());
+        }
     }
 }

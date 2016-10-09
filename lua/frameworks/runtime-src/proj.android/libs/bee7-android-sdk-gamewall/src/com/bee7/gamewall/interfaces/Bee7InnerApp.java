@@ -17,4 +17,16 @@ public interface Bee7InnerApp extends AppOffer{
      * @return <b>true</b> if mini-game started successfully, <b>false</b> otherwise
      */
     boolean start();
+
+    /**
+     * @return <b>true</b> if mini-game is locked
+     */
+    boolean isLocked();
+
+    /**
+     * @return number of level when mini-game is unlocked
+     */
+    int getLockLevel();
+
+    void lockedMiniGameClicked();
 }

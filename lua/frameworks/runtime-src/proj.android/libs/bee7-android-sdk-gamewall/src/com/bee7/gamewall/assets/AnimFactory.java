@@ -41,11 +41,11 @@ public class AnimFactory {
         return new SizeHeightTransformAnimation(view, 0, 1);
     }
 
-    public static Animation createTransformCollapseVideo(View view, FrameLayout parent) {
+    public static Animation createTransformCollapseVideo(View view, LinearLayout parent) {
         return new SizeHeightTransformAnimationVideo(view, 1, 0, parent);
     }
 
-    public static Animation createTransformExpansionVideo(VideoComponent videoComponent, FrameLayout videoPlaceholder) {
+    public static Animation createTransformExpansionVideo(VideoComponent videoComponent, LinearLayout videoPlaceholder) {
         return new SizeHeightTransformAnimationVideo(videoComponent, 0, 1, videoPlaceholder);
     }
 
@@ -91,6 +91,15 @@ public class AnimFactory {
     public static int getVideoViewHeight(View parent, int offset) {
         //int margin = parent.getContext().getResources().getDimensionPixelSize(R.dimen.bee7_ingamewall_video_margin_vertical);
         return (int) (((parent.getMeasuredWidth()) / 16f) * 9f) + offset;
+    }
+
+    /**
+     *
+     * @param width of available space
+     * @return calculated height
+     */
+    public static int getVideoViewHeight(int width) {
+        return (int) ((width / 16f) * 9f);
     }
 
     public static void disableAnimations(Context context) {
@@ -189,7 +198,7 @@ public class AnimFactory {
         private float fromHeight;
         private float toHeight;
 
-        public SizeHeightTransformAnimationVideo(View view, float fromY, float toY, FrameLayout parent) {
+        public SizeHeightTransformAnimationVideo(View view, float fromY, float toY, LinearLayout parent) {
             this.view = view;
 
             view.measure(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);

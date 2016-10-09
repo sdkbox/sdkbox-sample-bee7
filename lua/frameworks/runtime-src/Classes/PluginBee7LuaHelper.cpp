@@ -1,8 +1,6 @@
 
 #include "PluginBee7LuaHelper.h"
 #include "PluginBee7/PluginBee7.h"
-#include "CCLuaEngine.h"
-#include "tolua_fix.h"
 #include "SDKBoxLuaHelper.h"
 
 class Bee7ListenerLua : public sdkbox::Bee7Listener

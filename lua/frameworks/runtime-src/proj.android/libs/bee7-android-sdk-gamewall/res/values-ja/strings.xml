@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="bee7_ok">OK</string>
+    <string name="bee7_ok">オーケー</string>
     <string name="bee7_no_internet_connection">インターネットに\n接続していません</string>
     <string name="bee7_header_title">ゲームをプレイして入手</string>
 
@@ -29,4 +29,15 @@
     <string name="bee7_dialog_reward_part4"></string>
     <string name="bee7_dialog_reward_part5">で</string>
     <string name="bee7_dialog_reward_part6">を稼ごう</string>
+
+    <string name="bee7_dialog_locked_minigame_text">レベル%1$dに達すると\nこのゲーム\nがアンロックされます。</string>
+
+    <!--banner notification-->
+    <string name="bee7_banner_notification_play">プレイして</string>
+    <string name="bee7_banner_notification_earn">入手しよう</string>
+    <string name="bee7_banner_notification_watch">見て</string>
+    <string name="bee7_banner_notification_more">もっと入手する</string>
+
+    <!--video unit-->
+    <string name="bee7_video_unit_download">ダウンロード</string>
 </resources>

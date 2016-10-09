@@ -4,6 +4,8 @@ package com.bee7.gamewall;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.Pair;
 import android.widget.ImageView;
@@ -17,6 +19,7 @@ import com.bee7.gamewall.interfaces.OnOfferClickListener;
 import com.bee7.gamewall.interfaces.OnVideoClickListener;
 import com.bee7.gamewall.views.Bee7ImageView;
 import com.bee7.sdk.common.util.Logger;
+import com.bee7.sdk.common.util.SharedPreferencesHelper;
 import com.bee7.sdk.common.util.SharedPreferencesRewardsHelper;
 import com.bee7.sdk.publisher.GameWallConfiguration;
 import com.bee7.sdk.publisher.appoffer.AppOffer;
@@ -114,12 +117,13 @@ public abstract class GameWallUnitOffer extends GameWallUnit {
         this.appOffer = appOffer;
         this.appOfferWithResult.setAppOffer(this.appOffer);
 
-        rewardAlreadyGiven = sharedPreferencesRewardsHelper.hasBeenRewardAlreadyGiven(appOffer.getId(), appOffer.getCampaignId()    );
+        rewardAlreadyGiven = sharedPreferencesRewardsHelper.hasBeenRewardAlreadyGiven(appOffer.getId(), appOffer.getCampaignId());
 
         if (title == null) {
             throw new IllegalStateException("GameWallUnit title view must not be null!");
         }
 
+        Logger.debug("GameWallUnitOffer", "update title.setText " + appOffer.getLocalizedName());
         title.setText(appOffer.getLocalizedName());
 
         setAppOfferIcon();
@@ -132,6 +136,15 @@ public abstract class GameWallUnitOffer extends GameWallUnit {
 
         if (appOffer != null && appOffer.isInnerApp()) {
             icon.setImageDrawable(appOffer.getIconDrawable());
+
+            Handler handler = new Handler(Looper.getMainLooper());
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    spinner.setVisibility(INVISIBLE);
+                }
+            });
+
             return;
         }
 
@@ -184,13 +197,10 @@ public abstract class GameWallUnitOffer extends GameWallUnit {
         AssetsManager.getInstance().runIconTask(task);
     }
 
-    protected boolean canVideoBePlayed() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN &&
-                appOffer != null &&
-                appOffer.showVideoButton() &&
-                videoPrequaificationlType != AppOffersModel.VideoPrequalType.NO_VIDEO &&
-                (appOffer.getState() == AppOffer.State.NOT_CONNECTED || appOffer.getState() == AppOffer.State.NOT_CONNECTED_PENDING_INSTALL) &&
-                appOffer.getVideoUrl() != null &&
-                com.bee7.sdk.common.util.Utils.isHardwareVideoCapable();
+    public boolean isEmpty() {
+        return appOffer == null ||
+                appOfferWithResult == null ||
+                sharedPreferencesRewardsHelper == null ||
+                onOfferClickListener == null;
     }
 }

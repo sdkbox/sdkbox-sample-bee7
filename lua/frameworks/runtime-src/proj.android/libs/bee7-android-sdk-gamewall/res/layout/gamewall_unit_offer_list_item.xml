@@ -31,6 +31,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
 
+            <TextView
+                android:id="@+id/locked_icon"
+                android:layout_width="@dimen/bee7_locked_minigame_icon_width"
+                android:layout_height="@dimen/bee7_locked_minigame_icon_height"
+                style="@style/bee7_locked_minigam_icon_text"
+                android:gravity="center"
+                android:visibility="gone"/>
+
         </RelativeLayout>
 
         <RelativeLayout
@@ -55,7 +63,6 @@
                     android:id="@+id/gamewallGamesListItemVideoRewardText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="+##"
                     android:textColor="@color/bee7_text_color"
                     android:textSize="@dimen/bee7_gamewall_list_item_reward_text_size"
                     android:textStyle="bold"
@@ -94,15 +101,17 @@
             android:id="@+id/bee7_gamewallGamesListItemTitle"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:paddingLeft="@dimen/bee7_gamewall_list_item_text_horizontal_padding"
             android:paddingTop="1dp"
-            android:paddingRight="@dimen/bee7_gamewall_list_item_text_horizontal_padding"
             android:textColor="@color/bee7_text_color"
             android:textStyle="bold"
             android:textSize="@dimen/bee7_gamewall_list_item_text_size"
             android:gravity="center_horizontal"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:minLines="1"
             android:lines="2"
-            android:ellipsize="end"/>
+            android:includeFontPadding="true"
+            android:singleLine="false"/>
 
     </LinearLayout>
 

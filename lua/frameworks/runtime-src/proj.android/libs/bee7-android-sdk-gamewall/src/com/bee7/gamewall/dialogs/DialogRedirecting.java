@@ -47,8 +47,16 @@ public class DialogRedirecting extends Bee7Dialog {
     private Handler handler = new Handler();
 
     public DialogRedirecting(Context context, AppOffer appOffer, boolean tutorialEnabled, int timeout) {
-        super(context);
+        super(context, false);
+        init(context, appOffer, tutorialEnabled, timeout);
+    }
 
+    public DialogRedirecting(Context context, AppOffer appOffer, boolean tutorialEnabled, int timeout, boolean immersiveMode) {
+        super(context, immersiveMode);
+        init(context, appOffer, tutorialEnabled, timeout);
+    }
+
+    private void init(Context context, AppOffer appOffer, boolean tutorialEnabled, int timeout) {
         if (tutorialEnabled) {
             numOfSeconds = timeout / 1000;
 
@@ -109,7 +117,6 @@ public class DialogRedirecting extends Bee7Dialog {
 
             setContentView(R.layout.gamewall_dialog_redirect_spinner);
         }
-
     }
 
     private void startProgressUpdateReporting() {

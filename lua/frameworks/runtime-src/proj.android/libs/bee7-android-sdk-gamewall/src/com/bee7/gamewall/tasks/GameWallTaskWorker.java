@@ -6,23 +6,38 @@ import android.view.View;
 import com.bee7.gamewall.GameWallUnitOffer;
 import com.bee7.sdk.common.util.Logger;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 /**
  * Created by Bee7 on 15/06/15.
  */
 public class GameWallTaskWorker {
-    protected Handler executor;
 
-    public GameWallTaskWorker(String threadName) {
-        HandlerThread handlerThread = new HandlerThread(threadName, android.os.Process.THREAD_PRIORITY_BACKGROUND);
-        handlerThread.start();
+    public static final String TAG = GameWallTaskWorker.class.getName();
+    private static GameWallTaskWorker singletonInstance = null;
 
-        Looper looper = handlerThread.getLooper(); // Blocks until handlerThread is fully init
+    public static GameWallTaskWorker getInstance() {
+        if (singletonInstance == null) {
+            singletonInstance = new GameWallTaskWorker();
+        }
+        return singletonInstance;
+    }
 
-        executor = new Handler(looper);
+    private ExecutorService executor;
+    private List<GenerateGameWallUnitListHolderAsyncTask> gameWallUnitListTasks;
+    private List<GenerateGameWallUnitAsyncTask> gameWallUnitTasks;
+
+    public GameWallTaskWorker() {
+        executor = Executors.newSingleThreadExecutor();
+        gameWallUnitListTasks = new ArrayList<GenerateGameWallUnitListHolderAsyncTask>();
+        gameWallUnitTasks = new ArrayList<GenerateGameWallUnitAsyncTask>();
     }
 
     public void stop() {
-        executor.getLooper().quit();
+        executor.shutdownNow();
     }
 
     // post generate unit
@@ -31,9 +46,10 @@ public class GameWallTaskWorker {
             return;
         }
 
+        gameWallUnitTasks.add(task);
         final Handler main = new Handler();
 
-        executor.post(new Runnable() {
+        executor.execute(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -56,12 +72,14 @@ public class GameWallTaskWorker {
     // post generate unit list
     public void postGenerateUnitList(final GenerateGameWallUnitListHolderAsyncTask task) {
         if (task == null) {
+            Logger.debug(TAG, "postGenerateUnitList task == null");
             return;
         }
 
+        gameWallUnitListTasks.add(task);
         final Handler main = new Handler();
 
-        executor.post(new Runnable() {
+        executor.execute(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -71,6 +89,7 @@ public class GameWallTaskWorker {
                     main.post(new Runnable() {
                         @Override
                         public void run() {
+                            Logger.debug(TAG, " task.onPostExecute(listView)");
                             task.onPostExecute(listView);
                         }
                     });
@@ -79,5 +98,20 @@ public class GameWallTaskWorker {
                 }
             }
         });
+    }
+
+    public void removeAllCallbacks() {
+        for (GenerateGameWallUnitListHolderAsyncTask task : gameWallUnitListTasks) {
+            task.removeCallback();
+        }
+        for (GenerateGameWallUnitAsyncTask task : gameWallUnitTasks) {
+            task.removeCallback();
+        }
+
+        executor.shutdownNow();
+        executor = Executors.newSingleThreadExecutor();
+
+        gameWallUnitListTasks.clear();
+        gameWallUnitTasks.clear();
     }
 }

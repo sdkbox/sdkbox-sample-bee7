@@ -35,8 +35,8 @@ public class DialogReward extends Bee7Dialog {
 
     private SharedPreferences sharedPreferences;
 
-    public DialogReward(Context context, boolean videoReward) {
-        super(context);
+    public DialogReward(Context context, boolean videoReward, boolean immersiveMode) {
+        super(context, immersiveMode);
 
         sharedPreferences = context.getSharedPreferences(PREF_DIALOG_CONF, Context.MODE_PRIVATE);
 
@@ -126,6 +126,7 @@ public class DialogReward extends Bee7Dialog {
 
 
     public void show(String rewardAmount, Bitmap advertiserIcon, Drawable vcIcon, Drawable publisherIcon) {
+        Logger.debug(TAG, "show: rewardAmount " + rewardAmount);
         if (!TextUtils.isEmpty(rewardAmount)) {
             textRewardAmount.setText(rewardAmount);
         }
@@ -137,6 +138,7 @@ public class DialogReward extends Bee7Dialog {
             iconReward.setImageDrawable(vcIcon);
         }
 
+        //TODO implement check if dialog is in tutorial mode, do not use try-catch for controlling expected app flow
         try {
             if (vcIcon != null) {
                 iconVirtualCurrency.setImageDrawable(vcIcon);
@@ -144,7 +146,9 @@ public class DialogReward extends Bee7Dialog {
             if (publisherIcon != null) {
                 iconPublisher.setImageDrawable(publisherIcon);
             }
-        } catch (Exception ignore) {}
+        } catch (Exception e) {
+            Logger.debug(TAG, "Failed to set icon {0}", e.getMessage());
+        }
 
         show();
     }

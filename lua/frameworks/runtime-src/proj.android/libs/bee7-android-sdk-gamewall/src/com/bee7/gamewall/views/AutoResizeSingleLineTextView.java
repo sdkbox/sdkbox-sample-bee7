@@ -1,27 +1,28 @@
 package com.bee7.gamewall.views;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Paint;
+import android.graphics.Rect;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.util.TypedValue;
+import android.view.View;
 import android.widget.TextView;
 
 /**
  * Different to AutoResizeEdit. Makes any text scale down to fit the predefined height and width of this view. Left and
  * right padding set the padding. The largest text size is defined with the text size attribute.
- * 
+ *
  * @author Mihec
- * 
+ *
  */
 public class AutoResizeSingleLineTextView extends TextView implements TextWatcher {
 
-    //    private static final float THRESHOLD = 0.5f;
-    //    private static final int MAX_ITERATIONS = 30;
-
     private Paint mTestPaint = new Paint();
-    //    private float max = -1.0f;
     private boolean needResize = true;
 
     public AutoResizeSingleLineTextView(Context context) {
@@ -54,15 +55,57 @@ public class AutoResizeSingleLineTextView extends TextView implements TextWatche
         calculateTextSize(getMeasuredWidth());
     }
 
-    private void calculateTextSize(int viewWidth) {
+    public void calculateTextSize(int viewWidth) {
         if (!needResize) {
             // don't resize if nothing changed
             return;
         }
         needResize = false;
 
-        float width = viewWidth - (getPaddingLeft() + getPaddingRight());
-        //        mTestPaint = new Paint();
+        resizeText(viewWidth);
+        int iconSpace = scaleCompoundDrawable();
+        repositionCompoundDrawable(viewWidth, iconSpace);
+    }
+
+    private void repositionCompoundDrawable(int viewWidth, int iconSpace) {
+        if (iconSpace == 0) {
+            return;
+        }
+        Rect bounds = new Rect();
+        getPaint().getTextBounds(getText().toString(), 0, getText().length(), bounds);
+
+        int drawablePadding = (int) (viewWidth - getPaddingLeft() - (1.05f * bounds.width()) - getCompoundDrawablePadding() - iconSpace);
+        setPadding(getPaddingLeft(), getPaddingTop(), drawablePadding, getPaddingBottom());
+    }
+
+    private int scaleCompoundDrawable() {
+        if (getCompoundDrawables()[2] == null) {
+            return 0;
+        }
+        BitmapDrawable drawable = (BitmapDrawable) getCompoundDrawables()[2];
+        Bitmap original = drawable.getBitmap();
+        float aspectRatio = original.getHeight() / (float) original.getWidth();
+
+        int height = (int) getTextSize();
+        int width = Math.round(height / aspectRatio);
+        if (width > 0 && height > 0) {
+            Bitmap scaledBitmap = Bitmap.createScaledBitmap(original, width, height, false);
+            Drawable scaledDrawable = new BitmapDrawable(getResources(), scaledBitmap);
+            setCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
+            setCompoundDrawablesWithIntrinsicBounds(null, null, scaledDrawable, null);
+            return width;
+        }
+        return 0;
+    }
+
+    private void resizeText(int textSpace) {
+        float width;
+        if (getCompoundDrawables()[2] == null) {
+            width = textSpace - (getPaddingLeft() + getPaddingRight());
+        } else {
+            width = (0.85f * textSpace) - (getPaddingLeft() + getPaddingRight());
+        }
+
         mTestPaint.set(this.getPaint());
 
         float baseTextWidth = mTestPaint.measureText(getText().toString());
@@ -71,36 +114,8 @@ public class AutoResizeSingleLineTextView extends TextView implements TextWatche
             return;
         }
 
-//        float newSize = width / baseTextWidth * getTextSize();
         int newSize = (int) (width / baseTextWidth * getTextSize() * 0.99f);
-//        int newSize = (int) (width / baseTextWidth * getTextSize());
-        this.setTextSize(TypedValue.COMPLEX_UNIT_PX, newSize);
-
-        //        float min = 0;
-        //        max = getTextSize();
-        //
-        //        /*
-        //         * Start at half the current text size and work your way up. Not really a good approach.
-        //         */
-        //        int i = 0;
-        //        while ((max - min) > THRESHOLD && i < MAX_ITERATIONS) {
-        //            float size = (max + min) / 2;
-        //            mTestPaint.setTextSize(size);
-        //            float currentTextWidth = mTestPaint.measureText(getText().toString());
-        //            if (currentTextWidth >= width)
-        //                max = size;
-        //            else
-        //                min = size;
-        //            i++;
-        //        }
-        //
-        //        if ((max - min) <= THRESHOLD && i >= MAX_ITERATIONS) {
-        //            //error simply reduce the text size by half
-        //            Assert.fail("Text resizing failed in : " + MAX_ITERATIONS + " iterations");
-        //            //            min = min / 2.0f;
-        //        }
-        //
-        //        this.setTextSize(TypedValue.COMPLEX_UNIT_PX, min);
+        super.setTextSize(TypedValue.COMPLEX_UNIT_PX, newSize);
     }
 
     /**
@@ -109,15 +124,17 @@ public class AutoResizeSingleLineTextView extends TextView implements TextWatche
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         if (w != oldw || h != oldh) {
-            needResize = true;
+//            needResize = true;
         }
     }
 
     @Override
-    public void afterTextChanged(Editable s) {}
+    public void afterTextChanged(Editable s) {
+    }
 
     @Override
-    public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+    }
 
     @Override
     public void onTextChanged(CharSequence s, int start, int before, int count) {

@@ -136,7 +136,7 @@ public class AssetsManager {
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inPurgeable = true;
             options.inInputShareable = true;
-            options.inPreferredConfig = Bitmap.Config.RGB_565;
+            options.inPreferredConfig = Bitmap.Config.ARGB_8888;
             options.inDither = true;
             Bitmap bm = BitmapFactory.decodeStream(is, null, options);
             float r = (float) context.getResources().getDisplayMetrics().densityDpi / density;
@@ -155,6 +155,24 @@ public class AssetsManager {
                 // ignore
             }
         }
+    }
+
+    private Bitmap makeEndCreativeBitmap(byte[] data, int targetWidth, int targetHeight, Context context) {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeByteArray(data, 0, data.length, options);
+
+        int imageHeight = options.outHeight;
+        int imageWidth = options.outWidth;
+
+        // Calculate inSampleSize
+        options.inSampleSize = Math.max(imageWidth / targetWidth, imageHeight / targetHeight);
+
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+        options.inJustDecodeBounds = false;
+        options.inPurgeable = true;
+        return BitmapFactory.decodeByteArray(data, 0, data.length, options);
     }
 
     /*
@@ -268,6 +286,97 @@ public class AssetsManager {
                 }
 
                 makeAndApplyBitmap(data, task, thumbLink);
+            }
+        }).start();
+
+        return null;
+    }
+
+    private Bitmap getEndScreenDrawable(final AssetsManagerSetBitmapTask task, final int videoViewWidth, final int videoViewHeight) {
+        final URL creativeURL = task.getIconURL();
+
+        byte[] data = getCachedBitmap(task.getContext(), task.getIconURL());
+        if (data != null) {
+            /*
+             * Yep. Let's see if it's valid and if yes, use it. If not, delete the file from the cache, unless I got
+             * OOM, in which case the cache entry is valid and it won't be redownloaded after we fall through.
+             */
+            try {
+                Bitmap bm = makeEndCreativeBitmap(data, videoViewWidth, videoViewHeight, task.getContext());
+                if (bm != null) {
+                    return bm;
+                }
+                deleteFromDisk(creativeURL);
+            } catch (OutOfMemoryError e) {
+                Logger.error(TAG, e, "Failed to get bitmap {0}", task.getIconURL());
+            } catch (Throwable e) {
+                Logger.error(TAG, e, "Failed to get bitmap {0}", task.getIconURL());
+                deleteFromDisk(creativeURL);
+            }
+        }
+
+        Logger.debug(TAG, "Adding download creative: {0}", creativeURL);
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Logger.debug(TAG, "Downloading task started: {0}", creativeURL);
+
+                byte[] data = getCachedBitmap(task.getContext(), creativeURL);
+                if (data == null) {
+                    Logger.debug(TAG, "Downloading creative: {0}", creativeURL);
+                    data = download(creativeURL);
+                    Logger.debug(TAG, "Done downloading creative: {0}", creativeURL);
+
+                    if (data != null) {
+                        Logger.debug(TAG, "Caching creative: {0}", creativeURL);
+                        storeToDisk(data, creativeURL);
+                    } else {
+                        return;
+                    }
+                } else {
+                    Logger.debug(TAG, "Already downloaded: {0}", task.getIconURL());
+                }
+
+                final Bitmap bitmap = makeEndCreativeBitmap(data, videoViewWidth, videoViewHeight, task.getContext());
+                Logger.debug(TAG, "Done scaling creative: {0}", creativeURL);
+
+                try {
+                    if (bitmap == null) {
+                        Logger.error(TAG, "Can't make bitmap icon {0}", task.getIconURL());
+                        deleteFromDisk(creativeURL);
+                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                task.bitmapLoadedPost(getDefaultBitmap(task.getContext()));
+                            }
+                        });
+                        return;
+                    }
+
+                    Logger.debug(TAG, "Applying icon: {0}", task.getIconURL());
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            task.bitmapLoadedPost(bitmap);
+                        }
+                    });
+                    return;
+                } catch (OutOfMemoryError e) {
+                    Logger.error(TAG, e, "Failed to make bitmap {0}", task.getIconURL());
+                } catch (Throwable e) {
+                    Logger.error(TAG, e, "Failed to make bitmap {0}", task.getIconURL());
+                    deleteFromDisk(creativeURL);
+                }
+
+                Logger.debug(TAG, "Got null for {0}", task.getIconURL());
+
+                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        task.bitmapLoadedPost(getDefaultBitmap(task.getContext()));
+                    }
+                });
             }
         }).start();
 
@@ -441,12 +550,28 @@ public class AssetsManager {
      *
      * @param task to postpone setting icons until the downloading of the bitmap is finished
      */
-    public void runIconTask(AssetsManagerSetBitmapTask task) {
-        Bitmap bitmap = getDrawable(task);
+    public void runIconTask(final AssetsManagerSetBitmapTask task) {
+        final Bitmap bitmap = getDrawable(task);
 
         if (bitmap != null) {
-            task.bitmapLoadedPost(bitmap);
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    task.bitmapLoadedPost(bitmap);
+                }
+            });
         }
+    }
+
+    public void runEndScreenTask(final AssetsManagerSetBitmapTask task, int videoViewWidth, int videoViewHeight) {
+        final Bitmap bitmap = getEndScreenDrawable(task, videoViewWidth, videoViewHeight);
+
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                task.bitmapLoadedPost(bitmap);
+            }
+        });
     }
 
     public static IconUrlSize getDefaultIconUrlSize(Resources resources) {
