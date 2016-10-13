@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bee7_dialog_background_color">
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minWidth="@dimen/bee7_dialog_min_width"
+        android:minHeight="@dimen/bee7_dialog_min_height"
+        android:layout_centerInParent="true"
+        android:layout_marginLeft="@dimen/bee7_dialog_margin_horizontal"
+        android:layout_marginRight="@dimen/bee7_dialog_margin_horizontal"
+        android:background="@drawable/bee7_video_dialog_bg" >
+
+        <TextView
+            android:id="@+id/bee7_dialog_redirect_text_countdown"
+            android:layout_width="@dimen/bee7_dialog_redirect_circle_size"
+            android:layout_height="@dimen/bee7_dialog_redirect_circle_size"
+            android:text="3"
+            android:textColor="@color/bee7_text_color"
+            android:textSize="@dimen/bee7_dialog_redirect_circle_text_size"
+            android:textAllCaps="true"
+            android:textStyle="bold"
+            android:layout_marginLeft="@dimen/bee7_dialog_redirect_circle_padding_left"
+            android:layout_marginTop="@dimen/bee7_dialog_redirect_circle_padding_top"
+            android:background="@drawable/bee7_circle"
+            android:gravity="center"/>
+
+        <LinearLayout
+            android:id="@+id/bee7_dialog_redirecting_redirecting_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_centerInParent="true"
+            android:visibility="invisible"
+            android:paddingLeft="@dimen/bee7_dialog_margin_horizontal"
+            android:paddingRight="@dimen/bee7_dialog_margin_horizontal">
+
+            <TextView
+                android:id="@+id/bee7_dialog_redirect_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/bee7_dialog_redirecting"
+                android:textColor="@color/bee7_text_color"
+                android:textSize="@dimen/bee7_dialog_text_size"
+                android:textStyle="bold" />
+
+            <ImageView
+                android:id="@+id/bee7_dialog_redirect_img_redirecting"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/bee7_dot_anim_list"
+                android:layout_gravity="bottom"
+                android:paddingBottom="@dimen/bee7_dialog_dots_padding_bottom"
+                android:paddingLeft="@dimen/bee7_dialog_dots_padding_left"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_centerInParent="true">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:paddingLeft="@dimen/bee7_dialog_padding"
+                android:paddingRight="@dimen/bee7_dialog_padding"
+                android:paddingTop="@dimen/bee7_dialog_padding_top"
+                android:paddingBottom="@dimen/bee7_dialog_padding">
+
+                <LinearLayout
+                    android:id="@+id/bee7_dialog_redirect_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/bee7_dialog_redirect_part1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/bee7_dialog_redirecting_part1"
+                        android:textColor="@color/bee7_text_color"
+                        android:textSize="@dimen/bee7_dialog_text_size"
+                        android:textAllCaps="true"
+                        android:textStyle="bold"/>
+
+                    <ImageView
+                        android:id="@+id/bee7_dialog_redirect_icon_advertiser"
+                        android:layout_width="@dimen/bee7_dialog_redirect_icon_size"
+                        android:layout_height="@dimen/bee7_dialog_redirect_icon_size"
+                        android:layout_margin="@dimen/bee7_dialog_item_padding"/>
+
+                    <TextView
+                        android:id="@+id/bee7_dialog_redirect_part2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/bee7_dialog_redirecting_part2"
+                        android:textColor="@color/bee7_text_color"
+                        android:textSize="@dimen/bee7_dialog_text_size"
+                        android:textAllCaps="true"
+                        android:textStyle="bold"/>
+
+                </LinearLayout>
+
+                <ImageView
+                    android:id="@+id/bee7_dialog_redirect_arrow"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/bee7_dialog_icon_arrow_size"
+                    android:src="@drawable/bee7_arrow"
+                    android:adjustViewBounds="true"
+                    android:layout_margin="@dimen/bee7_dialog_item_padding"
+                    android:layout_gravity="center_horizontal" />
+
+                <LinearLayout
+                    android:id="@+id/bee7_dialog_redirect_layout2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/bee7_dialog_redirect_part3"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/bee7_dialog_redirecting_part3"
+                        android:textColor="@color/bee7_text_color"
+                        android:textSize="@dimen/bee7_dialog_text_size"
+                        android:textAllCaps="true"
+                        android:textStyle="bold"/>
+
+                    <ImageView
+                        android:id="@+id/bee7_dialog_redirect_icon_virtualcurrency"
+                        android:layout_width="@dimen/bee7_dialog_icon_vc_size"
+                        android:layout_height="@dimen/bee7_dialog_icon_vc_size"
+                        android:layout_margin="@dimen/bee7_dialog_item_padding"/>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/bee7_dialog_redirect_layout3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/bee7_dialog_redirect_part4"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/bee7_dialog_redirecting_part4"
+                        android:textColor="@color/bee7_text_color"
+                        android:textSize="@dimen/bee7_dialog_text_size"
+                        android:textAllCaps="true"
+                        android:textStyle="bold"/>
+
+                    <ImageView
+                        android:id="@+id/bee7_dialog_redirect_icon_publisher"
+                        android:layout_width="@dimen/bee7_dialog_publisher_icon_size"
+                        android:layout_height="@dimen/bee7_dialog_publisher_icon_size"
+                        android:layout_margin="@dimen/bee7_dialog_item_padding"/>
+
+                    <TextView
+                        android:id="@+id/bee7_dialog_redirect_part5"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/bee7_dialog_redirecting_part5"
+                        android:textColor="@color/bee7_text_color"
+                        android:textSize="@dimen/bee7_dialog_text_size"
+                        android:textAllCaps="true"
+                        android:textStyle="bold"/>
+
+                </LinearLayout>
+
+            </LinearLayout>
+        </LinearLayout>
+
+    </RelativeLayout>
+
+</RelativeLayout>

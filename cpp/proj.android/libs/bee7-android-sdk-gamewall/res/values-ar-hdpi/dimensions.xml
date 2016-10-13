@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- dialog -->
+    <dimen name="bee7_dialog_text_size">18dp</dimen>
+
+    <!-- gamewall_video_dialog -->
+    <dimen name="bee7_dialog_controls_icon_size">45dp</dimen>
+    <dimen name="bee7_dialog_controls_icon_padding">10dp</dimen>
+    <dimen name="bee7_dialog_vertical_margin">0dp</dimen>
+    <dimen name="bee7_dialog_vertical_item_spacing">8dp</dimen>
+    <dimen name="bee7_video_dialog_icon_size">42dp</dimen>
+
+    <!-- banner notification -->
+    <dimen name="bee7_banner_notification_height">80dp</dimen>
+    <dimen name="bee7_banner_notification_icon_size">46dp</dimen>
+    <dimen name="bee7_banner_notification_icon_size_small">40dp</dimen>
+    <dimen name="bee7_banner_notification_icon_video_overlay_size">60dp</dimen>
+    <dimen name="bee7_banner_notification_icon_margin">6dp</dimen>
+    <dimen name="bee7_banner_notification_text_size">20dp</dimen>
+    <dimen name="bee7_banner_notification_item_margin">3dp</dimen>
+    <dimen name="bee7_banner_notification_button_padding_vertical">3dp</dimen>
+    <dimen name="bee7_banner_notification_button_padding_horizontal">12dp</dimen>
+
+    <!-- dialog -->
+    <dimen name="bee7_dialog_publisher_icon_size">35dp</dimen>
+    <dimen name="bee7_dialog_icon_vc_size">30dp</dimen>
+</resources>

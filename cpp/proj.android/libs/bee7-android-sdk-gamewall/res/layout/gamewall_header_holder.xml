@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.bee7.gamewall.views.Bee7FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/gamewall_header"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+</com.bee7.gamewall.views.Bee7FrameLayout>

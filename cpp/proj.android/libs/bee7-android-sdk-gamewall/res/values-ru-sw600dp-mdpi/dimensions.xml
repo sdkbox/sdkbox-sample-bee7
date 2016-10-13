@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="bee7_dialog_min_width">390dp</dimen>
+    <dimen name="bee7_dialog_min_height">390dp</dimen>
+    <dimen name="bee7_dialog_padding">40dp</dimen>
+    <dimen name="bee7_dialog_padding_top">55dp</dimen>
+    <dimen name="bee7_dialog_icon_arrow_size">55dp</dimen>
+    <dimen name="bee7_dialog_item_margin">15dp</dimen>
+
+    <dimen name="bee7_dialog_text_size">35dp</dimen>
+    <dimen name="bee7_dialog_currency_text_size">50dp</dimen>
+</resources>

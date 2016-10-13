@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/banner_notification_parent_layout">
+
+    <LinearLayout
+        android:id="@+id/banner_notification_layout"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/bee7_banner_notification_height"
+        android:background="@drawable/bee7_banner_bg"
+        android:orientation="horizontal">
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="@dimen/bee7_banner_notification_icon_margin"
+            android:layout_marginRight="@dimen/bee7_banner_notification_icon_margin">
+
+            <ImageView
+                android:layout_width="@dimen/bee7_banner_notification_icon_video_overlay_size"
+                android:layout_height="match_parent"
+                android:src="@drawable/bee7_banner_video_bg"
+                android:layout_centerInParent="true"/>
+
+            <ImageView
+                android:id="@+id/banner_notification_offer_icon"
+                android:layout_width="@dimen/bee7_banner_notification_icon_size"
+                android:layout_height="@dimen/bee7_banner_notification_icon_size"
+                android:src="@drawable/default_game_icon"
+                android:layout_centerInParent="true"/>
+
+        </RelativeLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/bee7_banner_notification_watch"
+            android:textSize="@dimen/bee7_banner_notification_text_size"
+            android:textStyle="bold"
+            android:layout_gravity="center_vertical"
+            android:layout_marginRight="@dimen/bee7_banner_notification_icon_margin"
+            android:textColor="@color/bee7_banner_notification_text_color_1"/>
+
+        <LinearLayout
+            style="@style/bee7_banner_notification_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_gravity="center_vertical"
+            android:id="@+id/bee7_banner_notification_button">
+
+            <TextView
+                android:id="@+id/banner_notification_reward"
+                style="@style/bee7_banner_notification_button_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/bee7_banner_notification_earn"/>
+
+            <ImageView
+                android:id="@+id/banner_notification_reward_icon"
+                android:layout_width="@dimen/bee7_banner_notification_text_size"
+                android:layout_height="@dimen/bee7_banner_notification_text_size"
+                android:src="@drawable/bee7_icon_reward"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="@dimen/bee7_banner_notification_item_margin"/>
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/banner_notification_close"
+        style="@style/bee7_banner_notification_close"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true" />
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/banner_notification_layout"
+        android:src="@drawable/bee7_banner_shadow"
+        android:scaleType="fitXY" />
+
+</RelativeLayout>
