@@ -33,6 +33,12 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:host="publisher" android:scheme="_replace_with_your_bee7_scheme_" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:host="publisher" android:scheme="_replace_with_your_bee7_scheme_" />
+            </intent-filter>
         </activity>
         <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version" />
         <receiver android:enabled="true" android:exported="true" android:name="com.bee7.sdk.publisher.RewardReceiver">
@@ -46,6 +52,16 @@
             </intent-filter>
         </receiver>
         <service android:enabled="true" android:name="com.bee7.sdk.service.RewardingService" android:process=":rewardingservice" />
+        <receiver android:enabled="true" android:exported="true" android:name="com.bee7.sdk.publisher.RewardReceiver">
+            <intent-filter>
+                <action android:name="com.bee7.action.REWARD" />
+            </intent-filter>
+        </receiver>
+        <receiver android:enabled="true" android:exported="true" android:name="com.bee7.sdk.service.RewardingServiceReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.USER_PRESENT" />
+            </intent-filter>
+        </receiver>
         <receiver android:enabled="true" android:exported="true" android:name="com.bee7.sdk.publisher.RewardReceiver">
             <intent-filter>
                 <action android:name="com.bee7.action.REWARD" />

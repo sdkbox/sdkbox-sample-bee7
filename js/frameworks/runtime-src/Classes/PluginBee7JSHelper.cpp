@@ -14,21 +14,21 @@ public:
     void onAvailableChange(bool available)
     {
         std::string name("onAvailableChange");
-        jsval dataVal[1];
-        dataVal[0] = BOOLEAN_TO_JSVAL(available);
+        JS::Value dataVal[1];
+        dataVal[0] = JS::BooleanValue(available);
         invokeDelegate(name, dataVal, 1);
     }
     void onVisibleChange(bool available)
     {
         std::string name("onVisibleChange");
-        jsval dataVal[1];
-        dataVal[0] = BOOLEAN_TO_JSVAL(available);
+        JS::Value dataVal[1];
+        dataVal[0] = JS::BooleanValue(available);
         invokeDelegate(name, dataVal, 1);
     }
     void onGameWallWillClose()
     {
         std::string name("onGameWallWillClose");
-        jsval dataVal[0];
+        JS::Value dataVal[0];
         invokeDelegate(name, dataVal, 0);
     }
     void onGiveReward(long bee7Points,
@@ -39,18 +39,18 @@ public:
                       bool videoReward)
     {
         std::string name("onGiveReward");
-        jsval dataVal[6];
-        dataVal[0] = UINT_TO_JSVAL(bee7Points);
-        dataVal[1] = UINT_TO_JSVAL(virtualCurrencyAmount);
-        dataVal[2] = c_string_to_jsval(s_cx, appId.c_str());
-        dataVal[3] = BOOLEAN_TO_JSVAL(cappedReward);
-        dataVal[4] = UINT_TO_JSVAL(campaignId);
-        dataVal[5] = BOOLEAN_TO_JSVAL(videoReward);
+        JS::Value dataVal[6];
+        dataVal[0] = JS::NumberValue(bee7Points);
+        dataVal[1] = JS::NumberValue(virtualCurrencyAmount);
+        dataVal[2] = SB_STR_TO_JSVAL(s_cx, appId);
+        dataVal[3] = JS::BooleanValue(cappedReward);
+        dataVal[4] = JS::NumberValue(campaignId);
+        dataVal[5] = JS::BooleanValue(videoReward);
 
         invokeDelegate(name, dataVal, 6);
     }
 private:
-    void invokeDelegate(std::string& fName, jsval dataVal[], int argc) {
+    void invokeDelegate(std::string& fName, JS::Value dataVal[], int argc) {
         if (!s_cx) {
             return;
         }
@@ -78,7 +78,7 @@ private:
             if(!JS_GetProperty(cx, obj, func_name, &func_handle)) {
                 return;
             }
-            if(func_handle == JSVAL_VOID) {
+            if(func_handle == JS::NullValue()) {
                 return;
             }
 
@@ -101,7 +101,7 @@ private:
 
 
 #if defined(MOZJS_MAJOR_VERSION)
-bool js_PluginBee7JS_PluginBee7_setListener(JSContext *cx, uint32_t argc, jsval *vp)
+bool js_PluginBee7JS_PluginBee7_setListener(JSContext *cx, uint32_t argc, JS::Value *vp)
 #elif defined(JS_VERSION)
 JSBool js_PluginBee7JS_PluginBee7_setListener(JSContext *cx, unsigned argc, JS::Value *vp)
 #endif
@@ -119,13 +119,13 @@ JSBool js_PluginBee7JS_PluginBee7_setListener(JSContext *cx, unsigned argc, JS::
 
         JSB_PRECONDITION2(ok, cx, false, "js_PluginBee7JS_PluginBee7_setListener : Error processing arguments");
         Bee7ListenerJsHelper* lis = new Bee7ListenerJsHelper();
-        lis->setJSDelegate(args.get(0));
+        lis->setJSDelegate(cx, args.get(0));
         sdkbox::PluginBee7::setListener(lis);
 
         args.rval().setUndefined();
         return true;
     }
-    JS_ReportError(cx, "js_PluginBee7JS_PluginBee7_setListener : wrong number of arguments");
+    JS_ReportErrorUTF8(cx, "js_PluginBee7JS_PluginBee7_setListener : wrong number of arguments");
     return false;
 }
 
@@ -157,7 +157,7 @@ void register_all_PluginBee7JS_helper(JSContext* cx, JSObject* obj) {
         subChar = sub.c_str();
 
         JS_GetProperty(cx, obj, subChar, &nsval);
-        if (nsval == JSVAL_VOID) {
+        if (nsval == JS::NullValue()) {
             pluginObj = JS_NewObject(cx, NULL, NULL, NULL);
             nsval = OBJECT_TO_JSVAL(pluginObj);
             JS_SetProperty(cx, obj, subChar, nsval);
